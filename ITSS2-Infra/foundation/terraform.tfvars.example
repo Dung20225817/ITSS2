@@ -1,0 +1,16 @@
+aws_region = "ap-southeast-1"
+
+atlas_public_key  = "CHANGE_ME"
+atlas_private_key = "CHANGE_ME"
+atlas_org_id      = "CHANGE_ME"
+
+atlas_project_name = "itss2"
+atlas_project_id   = ""
+atlas_cluster_name = "itss2-cluster"
+
+# Set both to reuse an existing Atlas cluster instead of creating a new one.
+atlas_existing_cluster_name = ""
+atlas_existing_srv_address  = ""
+
+ecr_repository_name = "itss2-backend"
+mongo_secret_name   = "itss2/mongo-url"

@@ -1,0 +1,17 @@
+aws_region = "ap-southeast-1"
+
+ecr_repository_url = "CHANGE_ME_FROM_FOUNDATION_OUTPUT"
+backend_image_tag  = "CHANGE_ME_IMAGE_TAG"
+mongo_secret_arn   = "CHANGE_ME_FROM_FOUNDATION_OUTPUT"
+
+# Use "*" only for the first demo bootstrapping pass. Replace with the exact
+# Vercel production origin after the frontend URL is known.
+cors_origins = "*"
+
+vercel_project_name  = "itss2-frontend"
+frontend_github_repo = "nqk-khanhbk/ITSS2-Frontend"
+default_user_id      = "682b71380c69774bd1f056bd"
+
+# Leave null to use VERCEL_API_TOKEN / current Vercel CLI auth where supported.
+vercel_api_token = null
+vercel_team_id   = null

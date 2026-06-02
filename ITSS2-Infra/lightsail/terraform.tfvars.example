@@ -1,0 +1,7 @@
+aws_region       = "ap-southeast-1"
+service_name     = "itss2-backend"
+image            = "308621094806.dkr.ecr.ap-southeast-1.amazonaws.com/itss2-backend:1035da0"
+mongo_secret_arn = "arn:aws:secretsmanager:ap-southeast-1:308621094806:secret:itss2/mongo-url-TTYp67"
+cors_origins     = "*"
+power            = "nano"
+scale            = 1

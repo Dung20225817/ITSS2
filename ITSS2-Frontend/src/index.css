@@ -1,0 +1,119 @@
+:root {
+  background-color: #fff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.page-content {
+  padding: 0 120px;
+  padding-top: 60px;
+}
+
+.react-multi-carousel-list {
+  --button-space: 2%;
+  height: 100%;
+}
+
+.react-multi-carousel-track {
+  height: 100%;
+}
+
+.react-multi-carousel-track li {
+  display: flex;
+  justify-content: center;
+}
+
+.react-multiple-carousel__arrow {
+  /* Carousel arrow colors - green theme */
+  color: white;
+  background-color: #22c55e;
+  opacity: 0.25;
+  z-index: 10;
+}
+
+.react-multiple-carousel__arrow:hover {
+  color: white;
+  background-color: #22c55e;
+  opacity: 1;
+}
+
+.react-multiple-carousel__arrow::before {
+  color: var(--secondary-text);
+}
+
+.react-multiple-carousel__arrow--left {
+  left: var(--button-space);
+}
+
+.react-multiple-carousel__arrow--right {
+  right: var(--button-space);
+}
+
+.react-multi-carousel-dot-list {
+  bottom: 3%;
+
+  .react-multi-carousel-dot {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .react-multi-carousel-dot button {
+    width: 16px;
+    height: 16px;
+    border-color: var(--secondary);
+    background-color: transparent;
+  }
+
+  .react-multi-carousel-dot--active button {
+    background-color: var(--primary);
+  }
+}
+
+.small .react-multiple-carousel__arrow--left,
+.small .react-multiple-carousel__arrow--right {
+  --button-space: 1%;
+
+  min-width: 35px;
+  min-height: 35px;
+}
+
+.hover .react-multiple-carousel__arrow--left,
+.hover .react-multiple-carousel__arrow--right {
+  display: none;
+}
+
+.hover:hover .react-multiple-carousel__arrow--left,
+.hover:hover .react-multiple-carousel__arrow--right {
+  display: block;
+}
+
+.card .react-multi-carousel-track li {
+  padding: 0;
+}
+
+.card .react-multiple-carousel__arrow--left,
+.card .react-multiple-carousel__arrow--right {
+  --button-space: 4%;
+
+  min-width: 25px;
+  min-height: 25px;
+
+  &::before {
+    font-size: 14px;
+  }
+}
+
+.card .react-multi-carousel-dot button {
+  width: 12px;
+  height: 12px;
+}

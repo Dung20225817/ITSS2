@@ -1,0 +1,5 @@
+bucket         = "itss2-terraform-state-CHANGE-ME"
+key            = "lightsail/terraform.tfstate"
+region         = "ap-southeast-1"
+dynamodb_table = "itss2-terraform-locks"
+encrypt        = true

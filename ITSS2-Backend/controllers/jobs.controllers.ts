@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { paginationHelper } from "../helper/pagination.helper";
+import { mapJobToResponse } from "../helper/response.mapper";
 
 const prisma = new PrismaClient();
 
@@ -111,11 +112,7 @@ export const index = async (req: Request, res: Response) => {
     });
 
     // Map output to match Mongoose shape
-    const mappedJobs = jobs.map(job => ({
-      ...job,
-      _id: job.id,
-      workingSchedule: job.schedules.map(s => ({ day: s.day, period: s.period }))
-    }));
+    const mappedJobs = jobs.map(mapJobToResponse);
 
     res.status(200).json({
       data: mappedJobs,
@@ -142,11 +139,7 @@ export const detail = async (req: Request, res: Response) => {
       return;
     }
 
-    const mappedTask = {
-      ...task,
-      _id: task.id,
-      workingSchedule: task.schedules.map(s => ({ day: s.day, period: s.period }))
-    };
+    const mappedTask = mapJobToResponse(task);
 
     res.json(mappedTask);
   } catch (error) {

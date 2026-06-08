@@ -31,9 +31,14 @@
   padding: 0 15px;
   color: black;
   text-decoration: none;
+  font-weight: 400;
+  transition: color 160ms ease;
+}
+
+.header-item:hover {
+  color: #4b5563;
 }
 
 .header-item.active {
-  color: #22c55e;
-  font-weight: bold;
+  color: black;
 }

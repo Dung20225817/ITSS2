@@ -9,37 +9,13 @@ import ibm from "../../assets/ibm.png";
 
 import SearchBar from "../../components/SearchBar/SearchBar";
 import { useCallback, useEffect, useState } from "react";
-import Card from "../../components/Card/Card";
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
+import HomeJobCard from "../../components/HomeJobCard/HomeJobCard";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
+import Testimonial from "../../components/Testimonial/Testimonial";
 import apiClient from "../../api/client";
 import { DEFAULT_USER_ID } from "../../config/env";
 import { Button } from "@mui/material";
-
-const responsive = {
-  desktop: {
-    breakpoint: { max: 4000, min: 1280 },
-    items: 3,
-  },
-  laptop: {
-    breakpoint: { max: 1280, min: 1024 },
-    items: 3,
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 768 },
-    items: 3,
-  },
-  minitablet: {
-    breakpoint: { max: 768, min: 480 },
-    items: 3,
-  },
-  mobile: {
-    breakpoint: { max: 480, min: 0 },
-    items: 2,
-  },
-};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -48,7 +24,7 @@ const Home = () => {
   const [user, setUser] = useState({});
 
   const handleViewNewestJobs = () => {
-    navigate(`jobs?sortKey=startDate&sortValue=desc`);
+    navigate(`jobs?sortKey=createdAt&sortValue=desc`);
   };
 
   const handleViewForYouJobs = () => {
@@ -74,13 +50,13 @@ const Home = () => {
     if (user.category) params.append("category", user.category);
 
     const query = params.toString();
-    navigate(`/jobs?${query}&sortKey=startDate&sortValue=desc`);
+    navigate(`/jobs?${query}&sortKey=createdAt&sortValue=desc`);
   };
 
   const fetchNewestJobs = useCallback(async () => {
     try {
       const res = await apiClient.get(
-        "/api/v1/jobs?sortKey=startDate&sortValue=desc&limit=10&page=1"
+        "/api/v1/jobs?sortKey=createdAt&sortValue=desc&limit=6&page=1"
       );
       setNewestJobs(res.data.data);
     } catch (err) {
@@ -122,9 +98,12 @@ const Home = () => {
     if (user.jobForm) params.append("jobForm", user.jobForm);
     if (user.category) params.append("category", user.category);
 
-    const query = params.toString();
     try {
-      const res = await apiClient.get(`/api/v1/jobs?${query}`);
+      params.append("sortKey", "createdAt");
+      params.append("sortValue", "desc");
+      params.append("limit", "6");
+      params.append("page", "1");
+      const res = await apiClient.get(`/api/v1/jobs?${params.toString()}`);
       setForYouJobs(res.data.data);
     } catch (err) {
       const errorMessage =
@@ -165,9 +144,9 @@ const Home = () => {
             <Button 
               variant="contained" 
               onClick={() => navigate('/matches')}
-              style={{ backgroundColor: '#6300b3', color: 'white', padding: '12px 28px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '8px' }}
+              style={{ backgroundColor: '#49B3FC', color: 'white', padding: '12px 28px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '8px' }}
             >
-              🚀 XEM VIỆC PHÙ HỢP NHẤT
+               XEM VIỆC PHÙ HỢP NHẤT
             </Button>
           </div>
         </div>
@@ -182,18 +161,11 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="job-list">
-            <Carousel
-              className="hover"
-              responsive={responsive}
-              infinite={true}
-              removeArrowOnDeviceType={["minitablet", "mobile"]}
-            >
-              {newestJobs.length > 0 &&
-                newestJobs.map((job, index) => (
-                  <Card key={`newest-job-${index}`} job={job} />
-                ))}
-            </Carousel>
+          <div className="home-job-grid">
+            {newestJobs.length > 0 &&
+              newestJobs.slice(0, 6).map((job, index) => (
+                <HomeJobCard key={`newest-job-${job._id || index}`} job={job} />
+              ))}
           </div>
 
           <div className="view-all-btn" onClick={handleViewNewestJobs}>
@@ -209,24 +181,19 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="job-list">
-            <Carousel
-              className="hover"
-              responsive={responsive}
-              infinite={true}
-              removeArrowOnDeviceType={["minitablet", "mobile"]}
-            >
-              {forYoujobs.length > 0 &&
-                forYoujobs.map((job, index) => (
-                  <Card key={`for-u-job-${index}`} job={job} />
-                ))}
-            </Carousel>
+          <div className="home-job-grid">
+            {forYoujobs.length > 0 &&
+              forYoujobs.slice(0, 6).map((job, index) => (
+                <HomeJobCard key={`for-u-job-${job._id || index}`} job={job} />
+              ))}
           </div>
 
           <div className="view-all-btn" onClick={handleViewForYouJobs}>
             Xem tất cả
           </div>
         </div>
+
+        <Testimonial />
 
         <div className="favorite-companies">
           <div className="favorite-title-container">
@@ -235,11 +202,13 @@ const Home = () => {
           </div>
 
           <div className="company-list">
-            <img src={fpt} alt="company-logo" />
-            <img src={viettel} alt="company-logo" />
-            <img src={sun} alt="company-logo" />
-            <img src={vnpt} alt="company-logo" />
-            <img src={ibm} alt="company-logo" />
+            <div className="company-track">
+              {[fpt, viettel, sun, vnpt, ibm, fpt, viettel, sun, vnpt, ibm].map(
+                (logo, index) => (
+                  <img src={logo} alt="company-logo" key={index} />
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>

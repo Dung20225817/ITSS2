@@ -64,7 +64,7 @@ const SearchBar = ({ gray = false }) => {
         <TextField
           label={
             <div className="search-item-label">
-              <SearchIcon sx={{ color: "#6300b3" }} />
+              <SearchIcon sx={{ color: "#222" }} />
               <span>Tên công việc</span>
             </div>
           }
@@ -79,7 +79,7 @@ const SearchBar = ({ gray = false }) => {
         <FormControl fullWidth>
           <InputLabel id="address-label">
             <div className="search-item-label">
-              <LocationOnIcon sx={{ color: "#6300b3" }} />
+              <LocationOnIcon sx={{ color: "#222" }} />
               <span>Địa điểm</span>
             </div>
           </InputLabel>

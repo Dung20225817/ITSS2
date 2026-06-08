@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { mapUserToResponse, mapJobToResponse } from "../helper/response.mapper";
 
 const prisma = new PrismaClient();
 
@@ -18,11 +19,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
     }
     
     // Map to old shape
-    const responseUser = {
-      ...user,
-      _id: user.id,
-      workingSchedule: user.schedules.map(s => ({ day: s.day, period: s.period }))
-    };
+    const responseUser = mapUserToResponse(user);
     
     res.status(200).json(responseUser);
   } catch (error) {
@@ -93,11 +90,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     });
 
     // Map to old shape
-    const responseUser = {
-      ...updatedUser,
-      _id: updatedUser.id,
-      workingSchedule: updatedUser.schedules.map(s => ({ day: s.day, period: s.period }))
-    };
+    const responseUser = mapUserToResponse(updatedUser);
 
     res.status(200).json(responseUser);
   } catch (error) {
@@ -152,11 +145,7 @@ export const suggestJobs = async (req: Request, res: Response) => {
       score += matchingSchedules.length;
 
       // Map job to old shape
-      const mappedJob = {
-        ...job,
-        _id: job.id,
-        workingSchedule: job.schedules.map(s => ({ day: s.day, period: s.period }))
-      };
+      const mappedJob = mapJobToResponse(job);
 
       return {
         job: mappedJob,

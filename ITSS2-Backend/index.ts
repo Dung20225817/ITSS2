@@ -46,19 +46,18 @@ app.get("/healthz", (_req, res) => {
   });
 });
 
-app.get("/readyz", (_req, res) => {
-  const connected = database.isConnected();
+app.get("/readyz", async (_req, res) => {
+  const connected = await database.isConnected();
 
   res.status(connected ? 200 : 503).json({
     status: connected ? "ok" : "degraded",
-    databaseState: database.connectionState(),
   });
 });
 
 mainRoutes(app);
 
 const start = async (): Promise<void> => {
-  requireEnv("MONGO_URL");
+  requireEnv("DATABASE_URL");
 
   await database.connect();
 

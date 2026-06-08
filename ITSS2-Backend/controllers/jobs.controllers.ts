@@ -128,7 +128,7 @@ export const index = async (req: Request, res: Response) => {
 //[GET]/api/v1/jobs/detail/:id
 export const detail = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id;
+    const id = req.params.id as string;
     const task = await prisma.job.findUnique({
       where: { id },
       include: { schedules: true, company: true }

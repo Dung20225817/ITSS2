@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 //[GET]/api/v1/users
 export const getUserInfo = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { schedules: true }
@@ -31,7 +31,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
 //[POST]/api/v1/users
 export const updateUserInfo = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
 
     const {
       name,
@@ -107,7 +107,7 @@ export const suggestJobs = async (req: Request, res: Response) => {
       include: { schedules: true, company: true }
     });
     
-    const userId = req.params.id;
+    const userId = req.params.id as string;
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { schedules: true }

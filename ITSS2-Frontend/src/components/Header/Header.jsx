@@ -31,6 +31,14 @@ const Header = () => {
         >
           Thông tin cá nhân
         </NavLink>
+        <NavLink
+          to="/matches"
+          className={({ isActive }) =>
+            isActive ? "header-item active" : "header-item"
+          }
+        >
+          Việc làm phù hợp
+        </NavLink>
       </div>
       <div className="header-right"></div>
     </div>

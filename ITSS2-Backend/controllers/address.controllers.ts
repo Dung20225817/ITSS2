@@ -1,16 +1,21 @@
 import { Request, Response } from "express";
-import Job from "../models/jobs.models";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // [GET] /api/v1/addresses
 export const index = async (req: Request, res: Response) => {
   try {
-    const jobs = await Job.find({ deleted: false }).select("address -_id");
+    const jobs = await prisma.job.findMany({
+      where: { deleted: false },
+      select: { address: true }
+    });
 
     // Cắt địa chỉ trước dấu phẩy và lọc trùng
     const rawAddresses = jobs.map(job => {
       const fullAddress = job.address || "";
       return fullAddress.split(",")[0].trim(); // Lấy phần trước dấu phẩy
-    });
+    }).filter(addr => addr !== "");
 
     const uniqueAddresses = [...new Set(rawAddresses)]; // Loại bỏ trùng
 

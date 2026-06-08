@@ -15,6 +15,7 @@ import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import WorkIcon from "@mui/icons-material/Work";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import Schedule from "@mui/icons-material/WorkOutline";
+import StarIcon from "@mui/icons-material/Star";
 import "./JobDetail.css";
 import Header from "../../components/Header";
 
@@ -22,7 +23,22 @@ const JobDetail = () => {
   const { id } = useParams();
   const [job, setJob] = useState(null);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
   const navigate = useNavigate();
+
+  const userId = import.meta.env.VITE_DEFAULT_USER_ID || "demo-student-1";
+
+  const fetchReviews = async (companyId) => {
+    try {
+      const res = await apiClient.get(`/api/v1/reviews/company/${companyId}`);
+      setReviews(res.data);
+    } catch (error) {
+      console.error("Lỗi khi tải đánh giá:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -30,12 +46,53 @@ const JobDetail = () => {
         const response = await apiClient.get(`/api/v1/jobs/detail/${id}`);
         console.log("Dữ liệu trả về:", response.data);
         setJob(response.data);
+        if (response.data?.companyId) {
+          fetchReviews(response.data.companyId);
+        }
       } catch (err) {
         console.error("Lỗi khi gọi API:", err);
       }
     };
     fetchJob();
   }, [id]);
+
+  const submitReview = async (e) => {
+    e.preventDefault();
+    if (!job || !job.companyId) return;
+
+    try {
+      setSubmittingReview(true);
+      const res = await apiClient.post(`/api/v1/reviews`, {
+        userId,
+        companyId: job.companyId,
+        rating: Number(rating),
+        comment
+      });
+      
+      // Add new review to state
+      setReviews([res.data, ...reviews]);
+      setComment("");
+      setRating(5);
+      
+      // Update company trust score and review count in local state
+      // Since recalculation happens in backend, a real app might refetch job here.
+      // We'll increment review count locally to give immediate feedback.
+      setJob(prev => ({
+        ...prev,
+        company: {
+          ...prev.company,
+          reviewCount: prev.company.reviewCount + 1,
+          // Trust score calculation logic simulation for quick UI update
+          trustScore: ((prev.company.trustScore * prev.company.reviewCount) + Number(rating)) / (prev.company.reviewCount + 1)
+        }
+      }));
+    } catch (err) {
+      console.error("Lỗi khi gửi đánh giá:", err);
+      alert("Có lỗi xảy ra khi gửi đánh giá.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   if (!job) {
     return <div>Loading...</div>;
@@ -102,7 +159,7 @@ const JobDetail = () => {
                         style={{
                           fontStyle: "italic",
                           textDecoration: "underline",
-                          color: "#007bff", // hoặc chọn màu khác phù hợp
+                          color: "#007bff",
                           cursor: "pointer",
                         }}
                       >
@@ -112,8 +169,8 @@ const JobDetail = () => {
 
                     {showSchedule && job.workingSchedule?.length > 0 && (
                       <ul style={{ marginTop: "8px", marginLeft: "20px" }}>
-                        {job.workingSchedule.map((item) => (
-                          <li key={item._id}>
+                        {job.workingSchedule.map((item, index) => (
+                          <li key={index}>
                             <AccessTimeIcon
                               style={{
                                 verticalAlign: "middle",
@@ -158,6 +215,15 @@ const JobDetail = () => {
                 <div className="company-info">
                   <div className="company-name">{job.company.name}</div>
                   <div className="company-location">{job.company.address}</div>
+                  <div className="company-trust-score">
+                    <StarIcon style={{ color: "#fbbf24", fontSize: "1.1rem", verticalAlign: "text-bottom" }} />
+                    <span style={{ fontWeight: 600, marginLeft: 4 }}>
+                      {Number(job.company.trustScore).toFixed(1)}
+                    </span>
+                    <span style={{ color: "#6b7280", marginLeft: 4, fontSize: "0.9em" }}>
+                      ({job.company.reviewCount} đánh giá)
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="info">
@@ -177,7 +243,7 @@ const JobDetail = () => {
           <h2>Mô tả chi tiết công việc</h2>
           <div className="job-description">
             <ul>
-              {job.description.split(".").map(
+              {job.description?.split(".").map(
                 (line, index) =>
                   line.trim() && (
                     <p
@@ -189,6 +255,71 @@ const JobDetail = () => {
                   )
               )}
             </ul>
+          </div>
+
+          {/* REVIEWS SECTION */}
+          <h2>Đánh giá Doanh Nghiệp</h2>
+          <div className="reviews-section">
+            <div className="review-form-container">
+              <h3>Viết đánh giá của bạn</h3>
+              <form onSubmit={submitReview} className="review-form">
+                <div className="form-group">
+                  <label>Điểm đánh giá:</label>
+                  <div className="rating-select">
+                    {[1, 2, 3, 4, 5].map(num => (
+                      <label key={num}>
+                        <input 
+                          type="radio" 
+                          name="rating" 
+                          value={num} 
+                          checked={rating === num}
+                          onChange={() => setRating(num)}
+                        />
+                        {num} <StarIcon style={{ fontSize: "1rem", color: "#fbbf24", verticalAlign: "bottom" }} />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <textarea 
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Chia sẻ trải nghiệm của bạn về doanh nghiệp này..."
+                    required
+                    rows="3"
+                  />
+                </div>
+                <button type="submit" className="submit-review-btn" disabled={submittingReview}>
+                  {submittingReview ? "Đang gửi..." : "Gửi đánh giá"}
+                </button>
+              </form>
+            </div>
+
+            <div className="reviews-list">
+              {reviews.length === 0 ? (
+                <p className="no-reviews">Chưa có đánh giá nào cho doanh nghiệp này. Hãy là người đầu tiên!</p>
+              ) : (
+                reviews.map(review => (
+                  <div key={review.id} className="review-item">
+                    <div className="review-header">
+                      <strong>{review.user?.name || "Người dùng ẩn danh"}</strong>
+                      <span className="review-date">
+                        {new Date(review.createdAt).toLocaleDateString("vi-VN")}
+                      </span>
+                    </div>
+                    <div className="review-rating">
+                      {Array.from({ length: review.rating }).map((_, i) => (
+                        <StarIcon key={i} style={{ color: "#fbbf24", fontSize: "1.1rem" }} />
+                      ))}
+                      {Array.from({ length: 5 - review.rating }).map((_, i) => (
+                        <StarIcon key={`empty-${i}`} style={{ color: "#d1d5db", fontSize: "1.1rem" }} />
+                      ))}
+                    </div>
+                    {review.comment && <p className="review-comment">{review.comment}</p>}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

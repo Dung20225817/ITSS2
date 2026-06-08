@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
 import apiClient from "../../api/client";
 import { DEFAULT_USER_ID } from "../../config/env";
+import { Button } from "@mui/material";
 
 const responsive = {
   desktop: {
@@ -159,6 +160,15 @@ const Home = () => {
           <SearchBar />
           <div className="banner-text-3">
             Gợi ý: Gia sư, phục vụ, cộng tác viên lập trình, pháp sư ...
+          </div>
+          <div style={{ marginTop: "24px" }}>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/matches')}
+              style={{ backgroundColor: '#6300b3', color: 'white', padding: '12px 28px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '8px' }}
+            >
+              🚀 XEM VIỆC PHÙ HỢP NHẤT
+            </Button>
           </div>
         </div>
       </div>

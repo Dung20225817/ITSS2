@@ -1,23 +1,26 @@
-import mongoose from "mongoose";
+import prisma from './prisma';
 
 export const connect = async (): Promise<void> => {
-  const mongoUrl = process.env.MONGO_URL;
+  const dbUrl = process.env.DATABASE_URL;
 
-  if (!mongoUrl) {
-    throw new Error("MONGO_URL is required");
+  if (!dbUrl) {
+    throw new Error("DATABASE_URL is required");
   }
 
   try {
-    await mongoose.connect(mongoUrl, {
-      serverSelectionTimeoutMS: 10000,
-    });
-    console.log("Connected to MongoDB");
+    await prisma.$connect();
+    console.log("Connected to PostgreSQL via Prisma");
   } catch (error) {
-    console.error("MongoDB connection failed:", error);
+    console.error("PostgreSQL connection failed:", error);
     throw error;
   }
 };
 
-export const isConnected = (): boolean => mongoose.connection.readyState === 1;
-
-export const connectionState = (): number => mongoose.connection.readyState;
+export const isConnected = async (): Promise<boolean> => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (e) {
+    return false;
+  }
+};

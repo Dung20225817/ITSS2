@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  role            String   @default("student")
+  
+  // Fields mapped from Mongoose
+  address         String?
+  phone           String?
+  jobType         String?
+  jobForm         String?
+  category        String?
+  university      String?
+  major           String?
+  desiredJob      String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  schedules       Schedule[]
+  matches         MatchResult[]
+  reviews         Review[]
+}
+
+model Company {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  trustScore    Float    @default(0.0)
+  reviewCount   Int      @default(0)
+  
+  // Fields mapped from Mongoose
+  location      String?
+  employeeCount String?
+  industry      String?
+  address       String?
+  logo          String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  jobs          Job[]
+  reviews       Review[]
+}
+
+model Job {
+  id                 String   @id @default(uuid())
+  title              String
+  description        String?
+  companyId          String
+  salary             Int?
+  category           String?
+  jobType            String?
+  jobForm            String?
+  
+  // Fields mapped from Mongoose
+  address            String?
+  salaryUnit         String?
+  experienceRequired String?
+  numberOfPeople     String?
+  workingTime        String?
+  startDate          DateTime?
+  endDate            DateTime?
+  
+  deleted            Boolean  @default(false)
+  deletedAt          DateTime?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  company            Company  @relation(fields: [companyId], references: [id])
+  schedules          Schedule[]
+  matches            MatchResult[]
+}
+
+model Schedule {
+  id        String   @id @default(uuid())
+  userId    String?
+  jobId     String?
+  day       String
+  period    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model MatchResult {
+  id        String   @id @default(uuid())
+  userId    String
+  jobId     String
+  score     Int
+  reasons   Json
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  companyId String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}

@@ -7,13 +7,18 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "npm run typecheck"
+    "test": "npm run typecheck",
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed",
+    "db:migrate": "prisma migrate dev"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@prisma/client": "^5.22.0",
     "@types/express": "^5.0.1",
+    "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
@@ -23,5 +28,8 @@
     "express": "^5.1.0",
     "mongoose": "^8.14.2",
     "nodemon": "^3.1.10"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

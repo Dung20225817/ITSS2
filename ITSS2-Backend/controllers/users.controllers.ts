@@ -1,17 +1,30 @@
 import { Request, Response } from "express";
-import User from "../models/user.models";
-import Job from "../models/jobs.models";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 //[GET]/api/v1/users
 export const getUserInfo = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId);
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { schedules: true }
+    });
+    
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
-    res.status(200).json(user);
+    
+    // Map to old shape
+    const responseUser = {
+      ...user,
+      _id: user.id,
+      workingSchedule: user.schedules.map(s => ({ day: s.day, period: s.period }))
+    };
+    
+    res.status(200).json(responseUser);
   } catch (error) {
     console.error("Error fetching user info:", error);
     res.status(500).json({ message: "Server error" });
@@ -36,9 +49,15 @@ export const updateUserInfo = async (req: Request, res: Response) => {
       desiredJob,
       workingSchedule,
     } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
+    
+    // Convert workingSchedule input to Prisma format
+    const schedulesCreate = Array.isArray(workingSchedule) 
+      ? workingSchedule.map((s: any) => ({ day: s.day, period: s.period }))
+      : [];
+
+    const updatedUser = await prisma.user.upsert({
+      where: { id: userId },
+      update: {
         name,
         email,
         address,
@@ -49,17 +68,38 @@ export const updateUserInfo = async (req: Request, res: Response) => {
         university,
         major,
         desiredJob,
-        workingSchedule,
+        schedules: {
+          deleteMany: {}, // Delete old schedules
+          create: schedulesCreate // Create new schedules
+        }
       },
-      { new: true, upsert: true }
-    );
+      create: {
+        id: userId,
+        name: name || "Unknown",
+        email: email || `unknown-${Date.now()}@example.com`,
+        address,
+        phone,
+        jobType,
+        jobForm,
+        category,
+        university,
+        major,
+        desiredJob,
+        schedules: {
+          create: schedulesCreate
+        }
+      },
+      include: { schedules: true }
+    });
 
-    if (!updatedUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
+    // Map to old shape
+    const responseUser = {
+      ...updatedUser,
+      _id: updatedUser.id,
+      workingSchedule: updatedUser.schedules.map(s => ({ day: s.day, period: s.period }))
+    };
 
-    res.status(200).json(updatedUser);
+    res.status(200).json(responseUser);
   } catch (error) {
     console.error("Error updating user info:", error);
     res.status(500).json({ message: "Server error" });
@@ -68,62 +108,87 @@ export const updateUserInfo = async (req: Request, res: Response) => {
 
 //[GET]/api/v1/users/:id/suggested-jobs
 export const suggestJobs = async (req: Request, res: Response) => {
-  const jobs = await Job.find({ deleted: false });
-  const userId = req.params.id;
-  const user = await User.findById(userId);
-  if (!user) {
-    res.status(404).json({ message: "User not found" });
-    return;
-  }
-
-  const scoredJobs = jobs.map((job) => {
-    let score = 0;
-
-    if (user.jobType && job.jobType === user.jobType) score += 2;
-    if (user.jobForm && job.jobForm === user.jobForm) score += 2;
-
-    if (
-      user.desiredJob &&
-      job.title.toLowerCase().includes(user.desiredJob.toLowerCase())
-    ) {
-      score += 3;
+  try {
+    const jobs = await prisma.job.findMany({ 
+      where: { deleted: false },
+      include: { schedules: true, company: true }
+    });
+    
+    const userId = req.params.id;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { schedules: true }
+    });
+    
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
     }
 
-    if (user.category && job.category === user.category) score += 2;
+    const scoredJobs = jobs.map((job) => {
+      let score = 0;
 
-    const userSchedule = user.workingSchedule || [];
-    const jobSchedule = job.workingSchedule || [];
+      if (user.jobType && job.jobType === user.jobType) score += 2;
+      if (user.jobForm && job.jobForm === user.jobForm) score += 2;
 
-    const matchingSchedules = userSchedule.filter((uSlot) =>
-      jobSchedule.some(
-        (jSlot) => jSlot.day === uSlot.day && jSlot.period === uSlot.period
-      )
-    );
+      if (
+        user.desiredJob &&
+        job.title.toLowerCase().includes(user.desiredJob.toLowerCase())
+      ) {
+        score += 3;
+      }
 
-    score += matchingSchedules.length;
+      if (user.category && job.category === user.category) score += 2;
 
-    return {
-      job,
-      score,
-    };
-  });
+      const userSchedule = user.schedules || [];
+      const jobSchedule = job.schedules || [];
 
-  scoredJobs.sort((a, b) => b.score - a.score);
+      const matchingSchedules = userSchedule.filter((uSlot) =>
+        jobSchedule.some(
+          (jSlot) => jSlot.day === uSlot.day && jSlot.period === uSlot.period
+        )
+      );
 
-  const topJobs = scoredJobs.slice(0, 10);
-  const result = topJobs.map((entry) => entry.job);
-  res.status(200).json(result);
+      score += matchingSchedules.length;
+
+      // Map job to old shape
+      const mappedJob = {
+        ...job,
+        _id: job.id,
+        workingSchedule: job.schedules.map(s => ({ day: s.day, period: s.period }))
+      };
+
+      return {
+        job: mappedJob,
+        score,
+      };
+    });
+
+    scoredJobs.sort((a, b) => b.score - a.score);
+
+    const topJobs = scoredJobs.slice(0, 10);
+    const result = topJobs.map((entry) => entry.job);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Suggest Jobs Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 //[GET]/api/v1/users/:id/get-category-list
 export const getCategoryList = async (_req: Request, res: Response) => {
   try {
-    const categories = await Job.distinct("category", {
-      deleted: false,
-      category: { $nin: [null, ""] },
+    const categories = await prisma.job.findMany({
+      where: { 
+        deleted: false,
+        category: { not: null }
+      },
+      select: { category: true },
+      distinct: ['category']
     });
 
-    res.status(200).json(categories.sort((a, b) => a.localeCompare(b)));
+    const categoryNames = categories.map(c => c.category as string);
+    res.status(200).json(categoryNames.sort((a, b) => a.localeCompare(b)));
   } catch (error) {
     console.error("Error fetching category list:", error);
     res.status(500).json({ message: "Server error" });

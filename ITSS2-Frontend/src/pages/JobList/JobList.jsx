@@ -392,7 +392,10 @@ const JobList = () => {
               ) : jobs && jobs.length > 0 ? (
                 jobs.map((job) => (
                   <div className="job-card-container" key={job._id || `job-${Math.random()}`}>
-                    <Card job={formatJobForCard(job)} />
+                    <Card 
+                      job={formatJobForCard(job)} 
+                      isMatchingSchedule={filters.available && filters.available.length > 0} 
+                    />
                   </div>
                 ))
               ) : (

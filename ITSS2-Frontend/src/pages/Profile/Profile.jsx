@@ -475,7 +475,7 @@ const Profile = () => {
             </div>
             
             {/* Hiển thị bảng thời gian có sẵn nếu là Part-time */}
-            {profile.jobType === "Part-Time" && (
+            {(profile.jobType === "Part-Time" || profile.jobType === "Part-time") && (
               <div className="schedule-section">
                 <h3 className="schedule-title">Thời gian làm việc</h3>
                 

@@ -29,7 +29,7 @@ async function main() {
       role: 'student',
       address: 'Hà Nội',
       phone: '0123456789',
-      jobType: 'Part-time',
+      jobType: 'Part-Time',
       jobForm: 'Remote',
       category: 'IT',
       university: 'Đại học Bách Khoa Hà Nội',

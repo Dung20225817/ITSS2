@@ -38,15 +38,15 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
         // Tạm thời sử dụng mẫu cho job types và job forms
         setJobTypes([
           { name: "Freelancer" },
-          { name: "Full-Time" },
-          { name: "Part-Time" }
+          { name: "Full-time" },
+          { name: "Part-time" }
         ]);
         
         setJobForms([
           { name: "Tất cả" },
-          { name: "Internship" },
-          { name: "Contract" },
-          { name: "Làm thêm" }
+          { name: "Remote" },
+          { name: "Hybrid" },
+          { name: "On-site" }
         ]);
         
         // Sử dụng API mới để lấy danh sách category
@@ -102,7 +102,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       newJobTypes = newJobTypes.filter(item => item !== type);
       
       // Nếu loại bỏ Part-Time, cũng xóa tất cả các ngày đã chọn
-      if (type === "Part-Time") {
+      if (type.toLowerCase() === "part-time") {
         setFilters({ 
           ...filters, 
           jobType: newJobTypes,
@@ -253,7 +253,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
 
   // Kiểm tra xem Part-Time có được chọn
   const isPartTimeSelected = () => {
-    return Array.isArray(filters.jobType) && filters.jobType.includes("Part-Time");
+    return Array.isArray(filters.jobType) && filters.jobType.some((type) => type.toLowerCase() === "part-time");
   };
 
   return (

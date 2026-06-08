@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer/Footer";
 import viettel from "../../assets/viettel.png";
-import { Button, TextField, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { Alert, Snackbar } from "@mui/material";
+import {
+  Avatar,
+  Button,
+  Card,
+  Checkbox,
+  Input,
+  ListBox,
+  Select,
+  Spinner
+} from "@heroui/react";
 import apiClient from "../../api/client";
 import { DEFAULT_USER_ID } from "../../config/env";
 
@@ -22,6 +31,44 @@ const DEFAULT_PROFILE = {
   category: "",
   workingSchedule: []
 };
+
+const ProfileSelect = ({ label, value, placeholder, options, onChange }) => (
+  <div className="form-group">
+    <label>{label}</label>
+    <Select.Root
+      aria-label={label}
+      selectedKey={value || undefined}
+      onSelectionChange={(key) => {
+        if (key !== null) {
+          onChange(String(key));
+        }
+      }}
+      className="profile-select"
+      fullWidth
+    >
+      <Select.Trigger className="profile-select-trigger">
+        <Select.Value className={`profile-select-value ${value ? "" : "is-placeholder"}`}>
+          {value || placeholder}
+        </Select.Value>
+        <Select.Indicator className="profile-select-indicator" />
+      </Select.Trigger>
+      <Select.Popover className="profile-select-popover">
+        <ListBox className="profile-select-listbox">
+          {options.map((option) => (
+            <ListBox.Item
+              key={option}
+              id={option}
+              textValue={option}
+              className="profile-select-item"
+            >
+              {option}
+            </ListBox.Item>
+          ))}
+        </ListBox>
+      </Select.Popover>
+    </Select.Root>
+  </div>
+);
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -40,15 +87,6 @@ const Profile = () => {
   const [categoryOptions, setCategoryOptions] = useState([]);
 
   
-  // State cho dropdown
-  const [dropdowns, setDropdowns] = useState({
-    major: false,
-    university: false,
-    jobType: false,
-    jobForm: false,
-    category: false
-  });
-
   // Danh sách lựa chọn cố định cho các dropdown
   const options = {
     major: ["Công nghệ thông tin", "Kinh tế", "Ngoại ngữ", "Sư phạm", "Y khoa"],
@@ -127,28 +165,6 @@ const Profile = () => {
     });
   };
 
-  // Xử lý khi chọn một option từ dropdown
-  const handleSelectOption = (field, value) => {
-    setProfile({
-      ...profile,
-      [field]: value
-    });
-    
-    // Đóng dropdown sau khi chọn
-    setDropdowns({
-      ...dropdowns,
-      [field]: false
-    });
-  };
-
-  // Xử lý toggle dropdown
-  const toggleDropdown = (dropdown) => {
-    setDropdowns({
-      ...dropdowns,
-      [dropdown]: !dropdowns[dropdown]
-    });
-  };
-
   // Xử lý thay đổi lịch trình làm việc
   const handleAvailabilityChange = (day, period) => {
     const updatedAvailability = { ...profile.availability };
@@ -205,11 +221,8 @@ const Profile = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span>Cập nhật thông tin thành công!</span>
               <Button 
-                variant="outlined" 
-                size="small" 
-                color="inherit" 
-                onClick={() => navigate('/matches')}
-                style={{ borderColor: 'white', color: 'white' }}
+                className="notification-action"
+                onPress={() => navigate('/matches')}
               >
                 Xem việc phù hợp ngay
               </Button>
@@ -243,7 +256,7 @@ const Profile = () => {
       <div className="profile-page">
         <Header />
         <div className="profile-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-          <CircularProgress style={{ color: '#6300b3' }} />
+          <Spinner className="profile-spinner" />
         </div>
         <Footer />
       </div>
@@ -253,14 +266,12 @@ const Profile = () => {
   return (
     <div className="profile-page">
       <Header />
-      
-      <div className="profile-gradient-banner"></div>
-      
+
       <div className="profile-container">
-        <div className="profile-card">
-          <div className="profile-header">
+        <Card.Root className="profile-card">
+          <Card.Header className="profile-header">
             <div className="profile-avatar-section">
-              <img 
+              <Avatar
                 src={profile.avatar} 
                 alt="Avatar" 
                 className="profile-avatar" 
@@ -272,22 +283,20 @@ const Profile = () => {
             </div>
             
             <Button 
-              variant="contained"
               className="update-btn"
-              onClick={handleUpdateProfile}
-              disabled={saving}
+              onPress={handleUpdateProfile}
+              isDisabled={saving}
             >
-              {saving ? <CircularProgress size={24} style={{ color: 'white' }} /> : "Cập nhật"}
+              {saving ? <Spinner className="update-spinner" /> : "Cập nhật"}
             </Button>
-          </div>
-          
-          <div className="profile-form">
+          </Card.Header>
+
+          <Card.Content className="profile-form">
             <div className="form-row">
               <div className="form-group">
                 <label>Họ và tên</label>
-                <TextField
+                <Input
                   fullWidth
-                  variant="outlined"
                   value={profile.name || ""}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   className="profile-input"
@@ -296,9 +305,8 @@ const Profile = () => {
               
               <div className="form-group">
                 <label>Email</label>
-                <TextField
+                <Input
                   fullWidth
-                  variant="outlined"
                   value={profile.email || ""}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   className="profile-input"
@@ -310,9 +318,8 @@ const Profile = () => {
             <div className="form-row">
               <div className="form-group">
                 <label>Địa chỉ</label>
-                <TextField
+                <Input
                   fullWidth
-                  variant="outlined"
                   value={profile.address || ""}
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   className="profile-input"
@@ -322,9 +329,8 @@ const Profile = () => {
               
               <div className="form-group">
                 <label>Số điện thoại</label>
-                <TextField
+                <Input
                   fullWidth
-                  variant="outlined"
                   value={profile.phone || ""}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   className="profile-input"
@@ -334,144 +340,49 @@ const Profile = () => {
             </div>
             
             <div className="form-row">
-              <div className="form-group">
-                <label>Khoa/Ngành học</label>
-                <div className="custom-dropdown">
-                  <div 
-                    className="dropdown-selection"
-                    onClick={() => toggleDropdown("major")}
-                  >
-                    {profile.major || "Chọn khoa/ngành học"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.major ? "rotated" : ""}`} />
-                  </div>
-                  
-                  {dropdowns.major && (
-                    <div className="dropdown-options">
-                      {options.major.map((option, index) => (
-                        <div 
-                          key={index} 
-                          className="dropdown-option"
-                          onClick={() => handleSelectOption("major", option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-group">
-                <label>Trường học</label>
-                <div className="custom-dropdown">
-                  <div 
-                    className="dropdown-selection"
-                    onClick={() => toggleDropdown("university")}
-                  >
-                    {profile.university || "Chọn trường học"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.university ? "rotated" : ""}`} />
-                  </div>
-                  
-                  {dropdowns.university && (
-                    <div className="dropdown-options">
-                      {options.university.map((option, index) => (
-                        <div 
-                          key={index} 
-                          className="dropdown-option"
-                          onClick={() => handleSelectOption("university", option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ProfileSelect
+                label="Khoa/Ngành học"
+                value={profile.major}
+                placeholder="Chọn khoa/ngành học"
+                options={options.major}
+                onChange={(value) => handleInputChange("major", value)}
+              />
+
+              <ProfileSelect
+                label="Trường học"
+                value={profile.university}
+                placeholder="Chọn trường học"
+                options={options.university}
+                onChange={(value) => handleInputChange("university", value)}
+              />
             </div>
             
             <div className="form-row">
-              <div className="form-group">
-                <label>Loại công việc mong muốn</label>
-                <div className="custom-dropdown">
-                  <div 
-                    className="dropdown-selection"
-                    onClick={() => toggleDropdown("jobType")}
-                  >
-                    {profile.jobType || "Chọn loại công việc"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.jobType ? "rotated" : ""}`} />
-                  </div>
-                  
-                  {dropdowns.jobType && (
-                    <div className="dropdown-options">
-                      {options.jobType.map((option, index) => (
-                        <div 
-                          key={index} 
-                          className="dropdown-option"
-                          onClick={() => handleSelectOption("jobType", option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-group">
-                <label>Hình thức công việc mong muốn</label>
-                <div className="custom-dropdown">
-                  <div 
-                    className="dropdown-selection"
-                    onClick={() => toggleDropdown("jobForm")}
-                  >
-                    {profile.jobForm || "Chọn hình thức công việc"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.jobForm ? "rotated" : ""}`} />
-                  </div>
-                  
-                  {dropdowns.jobForm && (
-                    <div className="dropdown-options">
-                      {options.jobForm.map((option, index) => (
-                        <div 
-                          key={index} 
-                          className="dropdown-option"
-                          onClick={() => handleSelectOption("jobForm", option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ProfileSelect
+                label="Loại công việc mong muốn"
+                value={profile.jobType}
+                placeholder="Chọn loại công việc"
+                options={options.jobType}
+                onChange={(value) => handleInputChange("jobType", value)}
+              />
+
+              <ProfileSelect
+                label="Hình thức công việc mong muốn"
+                value={profile.jobForm}
+                placeholder="Chọn hình thức công việc"
+                options={options.jobForm}
+                onChange={(value) => handleInputChange("jobForm", value)}
+              />
             </div>
             
             <div className="form-row">
-              <div className="form-group">
-                <label>Vị trí công việc mong muốn</label>
-                <div className="custom-dropdown">
-                  <div 
-                    className="dropdown-selection"
-                    onClick={() => toggleDropdown("category")}
-                  >
-                    {profile.category || "Chọn vị trí công việc"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.category ? "rotated" : ""}`} />
-                  </div>
-                  
-                  {dropdowns.category && (
-                    <div className="dropdown-options">
-                      {categoryOptions.map((option, index) => (
-                        <div 
-                          key={index} 
-                          className="dropdown-option"
-                          onClick={() => handleSelectOption("category", option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ProfileSelect
+                label="Vị trí công việc mong muốn"
+                value={profile.category}
+                placeholder="Chọn vị trí công việc"
+                options={categoryOptions}
+                onChange={(value) => handleInputChange("category", value)}
+              />
             </div>
             
             {/* Hiển thị bảng thời gian có sẵn nếu là Part-time */}
@@ -492,12 +403,18 @@ const Profile = () => {
                       <div className="schedule-day">{day}</div>
                       {Object.entries(periods).map(([period, isAvailable]) => (
                         <div className="schedule-period-cell" key={period}>
-                          <input 
-                            type="checkbox"
-                            checked={isAvailable}
-                            onChange={() => handleAvailabilityChange(day, period)}
+                          <Checkbox.Root
                             className="schedule-checkbox"
-                          />
+                            isSelected={isAvailable}
+                            onChange={() => handleAvailabilityChange(day, period)}
+                            aria-label={`${day} ${period}`}
+                          >
+                            <Checkbox.Control className="schedule-checkbox-control">
+                              <Checkbox.Indicator className="schedule-checkbox-indicator">
+                                ✓
+                              </Checkbox.Indicator>
+                            </Checkbox.Control>
+                          </Checkbox.Root>
                         </div>
                       ))}
                     </div>
@@ -505,8 +422,8 @@ const Profile = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
+          </Card.Content>
+        </Card.Root>
       </div>
       
       <Snackbar 

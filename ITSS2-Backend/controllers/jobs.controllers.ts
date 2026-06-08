@@ -11,6 +11,7 @@ export const index = async (req: Request, res: Response) => {
     const where: Prisma.JobWhereInput = {
       deleted: false,
     };
+    const andConditions: Prisma.JobWhereInput[] = [];
 
     console.log(req.query);
 
@@ -41,7 +42,11 @@ export const index = async (req: Request, res: Response) => {
     // Lọc theo jobType
     if (req.query.jobType) {
       const jobTypes = req.query.jobType.toString().split(",").map((s) => s.trim());
-      where.jobType = { in: jobTypes };
+      andConditions.push({
+        OR: jobTypes.map((jobType) => ({
+          jobType: { equals: jobType, mode: "insensitive" }
+        }))
+      });
     }
 
     // Lọc theo mức lương
@@ -56,9 +61,11 @@ export const index = async (req: Request, res: Response) => {
       const days = req.query.days.toString().split(',').map((s) => s.trim());
       // Prisma không có regex trực tiếp cho text field trong sqlite/postgres linh hoạt như Mongoose.
       // Dùng cú pháp OR contains
-      where.OR = days.map(day => ({
-        workingTime: { contains: day, mode: 'insensitive' }
-      }));
+      andConditions.push({
+        OR: days.map(day => ({
+          workingTime: { contains: day, mode: 'insensitive' }
+        }))
+      });
     }
 
     // Lọc theo thời gian linh hoạt của khách hàng (schedules)
@@ -80,6 +87,10 @@ export const index = async (req: Request, res: Response) => {
           }))
         }
       };
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     // Đếm số lượng job phù hợp

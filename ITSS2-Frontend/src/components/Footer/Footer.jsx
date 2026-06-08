@@ -3,51 +3,65 @@ import logo from "../../assets/logo.png";
 
 const Footer = () => {
   return (
-    <div className="footer">
+    <footer className="footer">
       <div className="footer-content">
-        <div className="footer-top">
-          <div className="footer-item">
-            <div className="logo">
-              <img src={logo} alt="logo" />
+        <div className="footer-main">
+          <div className="footer-brand">
+            <img src={logo} alt="logo" />
+            <div className="footer-divider" />
+            <p>
+              Hệ thống kết nối sinh viên với các công việc bán thời gian, thực
+              tập và cộng tác viên phù hợp với lịch học.
+            </p>
+            <div className="footer-contact">
+              <span>Gọi ngay:</span>
+              <strong>0969999999</strong>
             </div>
-            <div className="phone">
-              <span>Gọi ngay: </span>
-              <span className="phone-number">0969999999</span>
-            </div>
-            <div className="address">
+            <p className="footer-address">
               Ngõ 216, Lê Thanh Nghị, Hai Bà Trưng, Hà Nội
-            </div>
+            </p>
           </div>
 
-          <div className="footer-item">
-            <div className="title">Bạn muốn làm gì</div>
-            <div className="item">Gia sư</div>
-            <div className="item">Lập trình</div>
-            <div className="item">Ma quỷ</div>
+          <div className="footer-column">
+            <h3>Bạn muốn làm gì</h3>
+            <a href="/jobs?category=Gia%20sư">Gia sư</a>
+            <a href="/jobs?category=IT">Lập trình</a>
+            <a href="/jobs?category=Marketing">Ma quỷ</a>
           </div>
 
-          <div className="footer-item">
-            <div className="title">Công việc</div>
-            <div className="item">Free-Lancers</div>
-            <div className="item">Full-Times</div>
-            <div className="item">Part-Times</div>
+          <div className="footer-column">
+            <h3>Công việc</h3>
+            <a href="/jobs?jobType=Freelancer">Free-Lancers</a>
+            <a href="/jobs?jobType=Full-Time">Full-Times</a>
+            <a href="/jobs?jobType=Part-Time">Part-Times</a>
           </div>
 
-          <div className="footer-item">
-            <div className="title">Thành viên</div>
-            <div className="item">Dang Hong Minh</div>
-            <div className="item">Quach Gia Duoc</div>
-            <div className="item">Pham Quoc Dung</div>
-            <div className="item">Duong Quang Dong</div>
-            <div className="item">Nguyen Thanh Binh</div>
-            <div className="item">Bui Manh Dung</div>
-            <div className="item">Hoang Nhat Minh</div>
+          <div className="footer-column footer-members">
+            <h3>Thành viên</h3>
+            <span>Dang Hong Minh</span>
+            <span>Quach Gia Duoc</span>
+            <span>Pham Quoc Dung</span>
+            <span>Duong Quang Dong</span>
+            <span>Nguyen Thanh Binh</span>
+            <span>Bui Manh Dung</span>
+            <span>Hoang Nhat Minh</span>
           </div>
         </div>
 
-        <div className="footer-bottom">@2026 Tạo bởi nhóm Sonata_ITSS2</div>
+        <div className="footer-divider footer-divider-wide" />
+
+        <div className="footer-bottom">
+          <p>© 2026 Tạo bởi nhóm Sonata_ITSS2</p>
+          <div className="footer-bottom-links">
+            <a href="/">Trang chủ</a>
+            <span />
+            <a href="/jobs">Tìm việc</a>
+            <span />
+            <a href="/profile">Thông tin cá nhân</a>
+          </div>
+        </div>
       </div>
-    </div>
+    </footer>
   );
 };
 

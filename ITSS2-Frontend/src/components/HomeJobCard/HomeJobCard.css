@@ -1,0 +1,204 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap");
+
+.cardjob {
+  min-height: 392px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #ededed;
+  border-radius: 18px;
+  color: #222;
+  background-color: #fff;
+  font-family: "Inter Tight";
+}
+
+.cardjobheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 28px 28px;
+  border-bottom: 1px solid rgba(34, 34, 34, 0.09);
+}
+
+.cardjobcompany {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cardjobcompany img {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: contain;
+  background-color: #f5f5f5;
+}
+
+.cardjobcompany button {
+  position: relative;
+  display: block;
+  min-width: 0;
+  border: 0;
+  padding: 0 0 3px;
+  overflow: hidden;
+  color: #222;
+  background: transparent;
+  cursor: pointer;
+  font-family: "Inter Tight";
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardjobcompany button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #222;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.cardjobcompany button:hover::after,
+.cardjobcompany button:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.cardjobcompany button:focus-visible {
+  outline: 2px solid rgba(34, 34, 34, 0.18);
+  outline-offset: 4px;
+}
+
+.cardjobbadge {
+  flex: 0 0 auto;
+  max-width: 118px;
+  padding: 7px 10px;
+  border: 1px solid rgba(34, 34, 34, 0.22);
+  border-radius: 6px;
+  color: #222;
+  background-color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardjobcontent {
+  min-height: 178px;
+  padding: 30px 28px 28px;
+  border-bottom: 1px solid rgba(34, 34, 34, 0.09);
+}
+
+.cardjobcontent h3 {
+  margin: 0 0 22px;
+  color: #222;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.15;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cardjobcontent p {
+  margin: 0;
+  color: rgba(34, 34, 34, 0.82);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.cardjoblist {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 28px;
+  border-bottom: 1px solid rgba(34, 34, 34, 0.09);
+}
+
+.cardjoblist span {
+  flex: 0 0 auto;
+  color: #222;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cardjoblist strong {
+  min-width: 0;
+  color: rgba(34, 34, 34, 0.86);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardjobfooter {
+  margin-top: auto;
+  padding: 20px 28px;
+  border-bottom: 0;
+}
+
+.cardjobposted {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(34, 34, 34, 0.86);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.cardjobposted svg {
+  width: 22px;
+  height: 22px;
+  color: #222;
+}
+
+.cardjobarrow {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  color: #222;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.cardjobarrow svg {
+  width: 34px;
+  height: 34px;
+}
+
+.cardjobarrow:hover {
+  color: #22c55e;
+  transform: translateX(4px);
+}
+
+@media (max-width: 1024px) {
+  .cardjobcontent h3 {
+    font-size: 18px;
+  }
+}

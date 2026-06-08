@@ -1,119 +1,157 @@
 .card {
-  min-height: 300px;
-  width: 340px;
+  position: relative;
+  width: 300px;
+  min-height: 370px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  border-radius: 10px;
-  padding: 20px;
-  border: 2px solid #efe2f8;
-  color: #18191c;
-  background-color: #f8f2fc;
-}
-
-.card-name {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 18px;
-  font-weight: bold;
+  gap: 11px;
+  padding: 58px 20px 22px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #1f2937;
+  background-color: #fff;
 }
 
-.card-tags {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.card-tag {
-  padding: 5px 10px;
-  border-radius: 5px;
-  text-transform: uppercase;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.card-tag.type {
-  background-color: #e7f6ea;
-  color: #0ba02c;
-}
-
-.card-tag.category {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.company,
-.card-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.avatar,
-.item-icon {
-  width: 40px;
-  height: 40px;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-}
-
-.company-info {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.company-name {
-  color: #303030;
+.card-job-type {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  max-width: 128px;
+  padding: 7px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  color: #ef4444;
+  background-color: #fff;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.company-location {
-  color: #767f8c;
-  font-size: 14px;
-}
-
-.item-icon {
-  min-width: 40px;
+.card-logo {
+  width: 92px;
+  height: 92px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
 }
 
-.job-address {
-  font-size: 14px;
-  color: #767f8c;
+.card-logo img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
 }
 
-.card-item.salary .item-icon {
-  height: 30px;
+.card-name {
+  width: 100%;
+  min-height: 48px;
+  display: -webkit-box;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.job-salary {
+.company-name {
+  width: 100%;
+  display: -webkit-box;
+  color: #0bb32a;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.card-match-tag {
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #4338ca;
+  background-color: #e0e7ff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card-info {
   width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.3;
+  text-align: center;
 }
 
-.salary-vnd {
-  color: #303030;
-  font-size: 15px;
+.card-info svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: #64748b;
 }
 
-.deadline {
-  color: #767f8c;
-  font-size: 13px;
+.card-address span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .btn-conatainer {
   width: 100%;
+  margin-top: auto;
   display: flex;
   justify-content: center;
+}
+
+.view-detail-link {
+  position: relative;
+  border: 0;
+  padding: 4px 0;
+  color: #0bb32a;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+  font-family: Muli, Helvetica, Arial, sans-serif;
+}
+
+.view-detail-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #0bb32a;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.view-detail-link:hover::after,
+.view-detail-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.view-detail-link:focus-visible {
+  outline: 2px solid rgba(11, 179, 42, 0.35);
+  outline-offset: 4px;
 }

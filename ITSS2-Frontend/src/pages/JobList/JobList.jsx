@@ -3,12 +3,13 @@ import "./JobList.css";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer/Footer";
 import JobFilter from "../../components/Filter/JobFilter";
-import Card from "../../components/Card/Card";
+import HomeJobCard from "../../components/HomeJobCard/HomeJobCard";
 import { useLocation, useNavigate } from "react-router-dom";
 import Pagination from '@mui/material/Pagination';
 import SearchIcon from "@mui/icons-material/Search";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { TextField, Select, MenuItem, FormControl, Button } from "@mui/material";
 import apiClient from "../../api/client";
 
@@ -59,6 +60,7 @@ const JobList = () => {
   
   // State cho dropdown sắp xếp
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
   // Danh sách địa điểm cho dropdown
   const [addressOptions, setAddressOptions] = useState([]);
@@ -90,6 +92,15 @@ const JobList = () => {
     document.addEventListener('click', closeDropdown);
     return () => document.removeEventListener('click', closeDropdown);
   }, [showSortDropdown]);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setIsFilterModalOpen(false);
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
   
   // Fetch danh sách công việc từ API dựa trên các tham số tìm kiếm và lọc
   useEffect(() => {
@@ -105,7 +116,7 @@ const JobList = () => {
         
         // Tham số phân trang
         params.append("page", currentPage);
-        params.append("limit", 6); // Số lượng job trên mỗi trang
+        params.append("limit", 9); // Số lượng job trên mỗi trang
         
         // Thêm các tham số lọc - Kiểm tra null/undefined trước khi truy cập .length
         if (filters.jobType && filters.jobType.length > 0) params.append("jobType", filters.jobType.join(","));
@@ -136,7 +147,7 @@ const JobList = () => {
             setTotalPages(response.data.pagination.totalPages);
           } else {
             // Đảm bảo rằng luôn có ít nhất 1 trang
-            setTotalPages(Math.ceil((response.data.countJobs || 0) / 6));
+            setTotalPages(Math.ceil((response.data.countJobs || 0) / 9));
           }
         }
       } catch (error) {
@@ -210,6 +221,7 @@ const JobList = () => {
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset về trang 1 khi lọc mới
+    setIsFilterModalOpen(false);
   };
   
   // Xử lý khi thay đổi tùy chọn sắp xếp
@@ -234,6 +246,7 @@ const JobList = () => {
     return {
       _id: job._id || "",
       title: job.title || "Không có tiêu đề",
+      description: job.description || "",
       jobType: job.jobType || "Không xác định",
       category: job.category || "Không xác định",
       company: {
@@ -246,6 +259,7 @@ const JobList = () => {
       salaryUnit: job.salaryUnit || "buổi",
       startDate: job.startDate || new Date(),
       endDate: job.endDate || new Date(),
+      createdAt: job.createdAt,
       deadline: deadline,
     };
   };
@@ -281,7 +295,7 @@ const JobList = () => {
                 onChange={(e) => handleSearchFormChange("keyword", e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <SearchIcon style={{ color: "#6300b3", marginRight: "8px" }} />
+                    <SearchIcon style={{ color: "#222", marginRight: "8px" }} />
                   ),
                 }}
               />
@@ -294,7 +308,7 @@ const JobList = () => {
                   onChange={(e) => handleSearchFormChange("address", e.target.value)}
                   displayEmpty
                   inputProps={{ 'aria-label': 'Địa điểm' }}
-                  startAdornment={<LocationOnIcon style={{ color: "#6300b3", marginRight: "8px" }} />}
+                  startAdornment={<LocationOnIcon style={{ color: "#222", marginRight: "8px" }} />}
                   IconComponent={KeyboardArrowDownIcon}
                 >
                   <MenuItem value="">
@@ -312,12 +326,19 @@ const JobList = () => {
             </div>
             
             <div className="search-btn-container">
+              <Button
+                className="open-filter-btn"
+                variant="outlined"
+                onClick={() => setIsFilterModalOpen(true)}
+                startIcon={<FilterAltIcon />}
+              >
+                Lọc
+              </Button>
               <Button 
                 variant="contained" 
                 color="primary" 
                 onClick={handleSearch}
                 style={{ 
-                  backgroundColor: "#6300b3", 
                   padding: "12px 24px",
                   textTransform: "uppercase",
                   fontWeight: "bold"
@@ -329,14 +350,7 @@ const JobList = () => {
           </div>
         </div>
 
-        <div className="content-section">
-          <div className="filter-column">
-            <JobFilter 
-              onFilterChange={handleFilterChange} 
-              initialFilters={filters}
-            />
-          </div>
-          
+        <div className={`content-section ${isFilterModalOpen ? "content-section-blurred" : ""}`}>
           <div className="jobs-column">
             <div className="jobs-header">
               <div className="jobs-count">
@@ -352,7 +366,7 @@ const JobList = () => {
                   <span>{sortOption.sortKey === "startDate" ? "Mới nhất" : "Lương cao nhất"}</span>
                   <KeyboardArrowDownIcon style={{ 
                     fontSize: 18, 
-                    color: "#6300b3",
+                    color: "#222",
                     transform: showSortDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.3s'
                   }} />
@@ -392,10 +406,7 @@ const JobList = () => {
               ) : jobs && jobs.length > 0 ? (
                 jobs.map((job) => (
                   <div className="job-card-container" key={job._id || `job-${Math.random()}`}>
-                    <Card 
-                      job={formatJobForCard(job)} 
-                      isMatchingSchedule={filters.available && filters.available.length > 0} 
-                    />
+                    <HomeJobCard job={formatJobForCard(job)} />
                   </div>
                 ))
               ) : (
@@ -422,6 +433,35 @@ const JobList = () => {
           </div>
         </div>
       </div>
+
+      {isFilterModalOpen && (
+        <div
+          className="filter-modal-overlay"
+          onClick={() => setIsFilterModalOpen(false)}
+        >
+          <div className="filter-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="filter-modal-header">
+              <div>
+                <h2>Bộ lọc công việc</h2>
+                <p>Tinh chỉnh kết quả theo mức lương, thời gian và vị trí mong muốn</p>
+              </div>
+              <button
+                className="filter-modal-close"
+                type="button"
+                onClick={() => setIsFilterModalOpen(false)}
+                aria-label="Đóng bộ lọc"
+              >
+                ×
+              </button>
+            </div>
+
+            <JobFilter
+              onFilterChange={handleFilterChange}
+              initialFilters={filters}
+            />
+          </div>
+        </div>
+      )}
       
       <Footer />
     </div>

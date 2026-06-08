@@ -34,4 +34,11 @@
 .search-btn {
   height: 56px;
   width: 120px;
+  background-color: #49B3FC !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.search-btn:hover {
+  background-color: #35a8f5 !important;
 }

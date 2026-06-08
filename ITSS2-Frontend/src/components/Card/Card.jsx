@@ -26,7 +26,7 @@ const formatPrice = (amount) => {
   return `${Number(amount).toLocaleString("vi-VN")} đ/buổi`;
 };
 
-const Card = ({ job = {} }) => {
+const Card = ({ job = {}, isMatchingSchedule = false }) => {
   const navigate = useNavigate();
 
   const handleViewDetail = () => {
@@ -56,6 +56,11 @@ const Card = ({ job = {} }) => {
       <div className="card-tags">
         <div className="card-tag type">{job.jobType}</div>
         <div className="card-tag category">{job.category}</div>
+        {isMatchingSchedule && (
+          <div className="card-tag schedule-match" style={{backgroundColor: '#e0e7ff', color: '#4338ca'}}>
+            ✨ Trùng lịch của bạn
+          </div>
+        )}
       </div>
 
       <div className="company">

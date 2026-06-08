@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import Header from "../../components/Header";
@@ -23,6 +24,7 @@ const DEFAULT_PROFILE = {
 };
 
 const Profile = () => {
+  const navigate = useNavigate();
   // Dữ liệu mặc định cho profile
   // State cho profile
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
@@ -199,7 +201,20 @@ const Profile = () => {
       if (response.status === 200) {
         setNotification({
           open: true,
-          message: "Cập nhật thông tin thành công!",
+          message: (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span>Cập nhật thông tin thành công!</span>
+              <Button 
+                variant="outlined" 
+                size="small" 
+                color="inherit" 
+                onClick={() => navigate('/matches')}
+                style={{ borderColor: 'white', color: 'white' }}
+              >
+                Xem việc phù hợp ngay
+              </Button>
+            </div>
+          ),
           severity: "success"
         });
       }

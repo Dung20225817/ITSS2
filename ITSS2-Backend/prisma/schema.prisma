@@ -87,7 +87,8 @@ model Schedule {
   userId    String?
   jobId     String?
   day       String
-  period    String
+  period    String?
+  time      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

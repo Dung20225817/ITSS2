@@ -48,8 +48,17 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     } = req.body;
     
     // Convert workingSchedule input to Prisma format
-    const schedulesCreate = Array.isArray(workingSchedule) 
-      ? workingSchedule.map((s: any) => ({ day: s.day, period: s.period }))
+    // Supports both old format {day, period} and new format {day, time}
+    const schedulesCreate: any[] = Array.isArray(workingSchedule) 
+      ? workingSchedule.map((s: any) => {
+          if (s.time) {
+            // New hourly format: {day, time}
+            return { day: s.day, time: s.time };
+          } else {
+            // Old period format: {day, period} (for backward compatibility)
+            return { day: s.day, period: s.period };
+          }
+        })
       : [];
 
     const updatedUser = await prisma.user.upsert({
@@ -137,9 +146,23 @@ export const suggestJobs = async (req: Request, res: Response) => {
       const jobSchedule = job.schedules || [];
 
       const matchingSchedules = userSchedule.filter((uSlot) =>
-        jobSchedule.some(
-          (jSlot) => jSlot.day === uSlot.day && jSlot.period === uSlot.period
-        )
+        jobSchedule.some((jSlot) => {
+          // Match by day first
+          if (jSlot.day !== uSlot.day) return false;
+          
+          // Support both old period format and new time format
+          const uTime = (uSlot as any).time;
+          const jTime = (jSlot as any).time;
+          
+          if (uTime && jTime) {
+            // New format: match by time
+            return jTime === uTime;
+          } else if (uSlot.period && jSlot.period) {
+            // Old format: match by period
+            return jSlot.period === uSlot.period;
+          }
+          return false;
+        })
       );
 
       score += matchingSchedules.length;

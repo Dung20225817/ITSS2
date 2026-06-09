@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 // [GET] /api/v1/reviews/company/:companyId
 export const getReviews = async (req: Request, res: Response) => {
   try {
-    const { companyId } = req.params;
+    const companyId = req.params.companyId as string;
     const reviews = await prisma.review.findMany({
       where: { companyId },
       include: {

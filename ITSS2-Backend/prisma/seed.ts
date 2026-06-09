@@ -147,6 +147,7 @@ async function main() {
   await prisma.company.deleteMany();
   await prisma.user.deleteMany();
 
+
   const createdCompanies = await Promise.all(
     companies.map((company) => prisma.company.create({ data: company }))
   );
@@ -165,6 +166,7 @@ async function main() {
       university: "Dai hoc Bach Khoa Ha Noi",
       major: "Cong nghe thong tin",
       desiredJob: "Frontend Developer",
+
       schedules: {
         create: [
           { day: "Thu 2", period: "sang" },

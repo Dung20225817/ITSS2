@@ -9,7 +9,6 @@ import {
   Avatar,
   Button,
   Card,
-  Checkbox,
   Input,
   ListBox,
   Select,
@@ -87,6 +86,11 @@ const Profile = () => {
   const [categoryOptions, setCategoryOptions] = useState([]);
 
   
+  const TIME_SLOTS = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+  const SCHEDULE_DAYS = ["Th? 2", "Th? 3", "Th? 4", "Th? 5", "Th? 6", "Th? 7", "Ch? nh?t"];
+
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState(new Set());
+
   // Danh sách lựa chọn cố định cho các dropdown
   const options = {
     major: ["Công nghệ thông tin", "Kinh tế", "Ngoại ngữ", "Sư phạm", "Y khoa"],
@@ -157,6 +161,44 @@ const Profile = () => {
     fetchUserData();
   }, [userId]);
 
+    useEffect(() => {
+    if (profile.workingSchedule && Array.isArray(profile.workingSchedule)) {
+      const slots = new Set();
+      
+      profile.workingSchedule.forEach(schedule => {
+        if (schedule.time) {
+          // New hourly format
+          slots.add(`${schedule.day}|${schedule.time}`);
+        } else if (schedule.period) {
+          // Old period format: convert to time slots
+          // Assuming: "sáng" = 08:00, "chiều" = 14:00, "tối" = 18:00
+          const periodTimes = {
+            "sáng": ["08:00", "10:00", "12:00"],
+            "chiều": ["14:00", "16:00"],
+            "tối": ["18:00", "20:00", "22:00"]
+          };
+          
+          const times = periodTimes[schedule.period] || [];
+          times.forEach(time => {
+            slots.add(`${schedule.day}|${time}`);
+          });
+        }
+      });
+      
+      setSelectedTimeSlots(slots);
+    }
+  }, [profile._id]);
+
+  const toggleTimeSlot = (day, time) => {
+    const key = `${day}|${time}`;
+    setSelectedTimeSlots(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   // Xử lý khi thay đổi giá trị input
   const handleInputChange = (field, value) => {
     setProfile({
@@ -165,36 +207,15 @@ const Profile = () => {
     });
   };
 
-  // Xử lý thay đổi lịch trình làm việc
-  const handleAvailabilityChange = (day, period) => {
-    const updatedAvailability = { ...profile.availability };
-    updatedAvailability[day][period] = !updatedAvailability[day][period];
-    
-    setProfile({
-      ...profile,
-      availability: updatedAvailability
-    });
-  };
-
   // Xử lý cập nhật profile
   const handleUpdateProfile = async () => {
     setSaving(true);
     
     try {
-      // Chuyển đổi availability thành workingSchedule
-      const workingSchedule = [];
-      
-      Object.entries(profile.availability || {}).forEach(([day, periods]) => {
-        Object.entries(periods).forEach(([period, isAvailable]) => {
-          if (isAvailable) {
-            // Chuyển đổi "Ca sáng" thành "sáng"
-            const periodValue = period.replace("Ca ", "");
-            workingSchedule.push({
-              day: day,
-              period: periodValue
-            });
-          }
-        });
+      // Convert selectedTimeSlots to workingSchedule with hourly format
+      const workingSchedule = Array.from(selectedTimeSlots).map(slot => {
+        const [day, time] = slot.split("|");
+        return { day, time };
       });
       
       // Chuẩn bị dữ liệu gửi lên server
@@ -385,43 +406,53 @@ const Profile = () => {
               />
             </div>
             
-            {/* Hiển thị bảng thời gian có sẵn nếu là Part-time */}
-            {profile.jobType === "Part-Time" && (
-              <div className="schedule-section">
-                <h3 className="schedule-title">Thời gian làm việc</h3>
-                
-                <div className="schedule-table">
-                  <div className="schedule-header">
-                    <div className="schedule-day"></div>
-                    <div className="schedule-period">Ca sáng</div>
-                    <div className="schedule-period">Ca chiều</div>
-                    <div className="schedule-period">Ca tối</div>
+            <div className="schedule-section">
+  <h3 className="schedule-title">🗓️ Đăng ký thời gian rảnh của bạn</h3>
+  <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+    Chọn các khung giờ bạn có thể làm việc. Hệ thống sẽ tự động tìm công việc phù hợp.
+  </p>
+
+  <div className="time-grid-container">
+    <table className="time-grid-table">
+      <thead>
+        <tr>
+          <th>Giờ</th>
+          {SCHEDULE_DAYS.map(day => (
+            <th key={day}>{day}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {TIME_SLOTS.map(time => (
+          <tr key={time}>
+            <td className="time-label">{time}</td>
+            {SCHEDULE_DAYS.map(day => {
+              const slotKey = `${day}|${time}`;
+              const isSelected = selectedTimeSlots.has(slotKey);
+              return (
+                <td key={day} style={{ padding: '8px' }}>
+                  <div
+                    className={isSelected ? 'time-cell selected' : 'time-cell'}
+                    onClick={() => toggleTimeSlot(day, time)}
+                    role="button"
+                  >
+                    {isSelected ? '✓' : ''}
                   </div>
-                  
-                  {Object.entries(profile.availability || {}).map(([day, periods]) => (
-                    <div className="schedule-row" key={day}>
-                      <div className="schedule-day">{day}</div>
-                      {Object.entries(periods).map(([period, isAvailable]) => (
-                        <div className="schedule-period-cell" key={period}>
-                          <Checkbox.Root
-                            className="schedule-checkbox"
-                            isSelected={isAvailable}
-                            onChange={() => handleAvailabilityChange(day, period)}
-                            aria-label={`${day} ${period}`}
-                          >
-                            <Checkbox.Control className="schedule-checkbox-control">
-                              <Checkbox.Indicator className="schedule-checkbox-indicator">
-                                ✓
-                              </Checkbox.Indicator>
-                            </Checkbox.Control>
-                          </Checkbox.Root>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {selectedTimeSlots.size > 0 && (
+    <div className="schedule-summary">
+      ? <strong>?? ch?n {selectedTimeSlots.size} khung gi?</strong> ? H? th?ng ?ang t? ??ng t?m ki?m c?ng vi?c ph? h?p...
+    </div>
+  )}
+</div>
           </Card.Content>
         </Card.Root>
       </div>

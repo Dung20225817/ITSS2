@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // [POST] /api/v1/matching/run/:userId
 export const runMatching = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.userId as string;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -65,7 +65,7 @@ export const runMatching = async (req: Request, res: Response) => {
 // [GET] /api/v1/matching/results/:userId
 export const getMatches = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.userId as string;
 
     const matches = await prisma.matchResult.findMany({
       where: { userId },
@@ -87,7 +87,7 @@ export const getMatches = async (req: Request, res: Response) => {
 // [PATCH] /api/v1/matching/results/:id/respond
 export const respondMatch = async (req: Request, res: Response) => {
   try {
-    const matchId = req.params.id;
+    const matchId = req.params.id as string;
     const { status } = req.body;
 
     if (!["accepted", "rejected"].includes(status)) {

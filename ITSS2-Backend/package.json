@@ -17,6 +17,7 @@
   "description": "",
   "devDependencies": {
     "@prisma/client": "^5.22.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",

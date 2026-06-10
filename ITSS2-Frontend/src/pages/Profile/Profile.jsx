@@ -87,7 +87,7 @@ const Profile = () => {
 
   
   const TIME_SLOTS = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
-  const SCHEDULE_DAYS = ["Th? 2", "Th? 3", "Th? 4", "Th? 5", "Th? 6", "Th? 7", "Ch? nh?t"];
+  const SCHEDULE_DAYS = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
 
   const [selectedTimeSlots, setSelectedTimeSlots] = useState(new Set());
 
@@ -449,7 +449,7 @@ const Profile = () => {
 
   {selectedTimeSlots.size > 0 && (
     <div className="schedule-summary">
-      ? <strong>?? ch?n {selectedTimeSlots.size} khung gi?</strong> ? H? th?ng ?ang t? ??ng t?m ki?m c?ng vi?c ph? h?p...
+      <strong>Đã chọn {selectedTimeSlots.size} khung giờ.</strong> Hệ thống đang tự động tìm kiếm công việc phù hợp...
     </div>
   )}
 </div>

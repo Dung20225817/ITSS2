@@ -1,0 +1,131 @@
+.auth-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(34, 197, 94, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 26%),
+    linear-gradient(135deg, #f8fafc 0%, #eef7f1 48%, #f8fafc 100%);
+  display: flex;
+  align-items: center;
+  padding: 48px 0;
+}
+
+.auth-shell {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 430px;
+  gap: 56px;
+  align-items: center;
+}
+
+.auth-brand {
+  max-width: 620px;
+}
+
+.auth-logo {
+  display: inline-flex;
+  align-items: center;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 800;
+  text-decoration: none;
+  margin-bottom: 36px;
+}
+
+.auth-heading {
+  color: #0f172a;
+  font-weight: 800 !important;
+  line-height: 1.02 !important;
+  letter-spacing: 0 !important;
+  margin-bottom: 18px !important;
+}
+
+.auth-copy {
+  color: #475569;
+  font-size: 18px !important;
+  line-height: 1.65 !important;
+  max-width: 540px;
+}
+
+.auth-panel {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.14) !important;
+  overflow: hidden;
+}
+
+.auth-tabs {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.auth-tabs .MuiTab-root {
+  min-height: 58px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.auth-tabs .Mui-selected {
+  color: #16a34a !important;
+}
+
+.auth-tabs .MuiTabs-indicator {
+  background-color: #16a34a;
+  height: 3px;
+}
+
+.auth-form {
+  padding: 34px;
+}
+
+.auth-form-title {
+  color: #0f172a;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+
+.auth-form-subtitle {
+  color: #64748b;
+  line-height: 1.5 !important;
+}
+
+.auth-submit {
+  min-height: 48px;
+  border-radius: 8px !important;
+  background-color: #16a34a !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.auth-submit:hover {
+  background-color: #15803d !important;
+}
+
+@media (max-width: 900px) {
+  .auth-page {
+    align-items: flex-start;
+    padding: 28px 0;
+  }
+
+  .auth-shell {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .auth-heading {
+    font-size: 38px !important;
+  }
+
+  .auth-copy {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-form {
+    padding: 24px;
+  }
+
+  .auth-heading {
+    font-size: 32px !important;
+  }
+}

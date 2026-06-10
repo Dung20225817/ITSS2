@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: itss2_password
       POSTGRES_DB: itss2_mvp
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - itss2_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -17,5 +17,16 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: itss2_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - itss2_redisdata:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
 volumes:
   itss2_pgdata:
+  itss2_redisdata:

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import Header from "../../components/Header";
@@ -6,7 +6,6 @@ import Footer from "../../components/Footer/Footer";
 import viettel from "../../assets/viettel.png";
 import { Alert, Snackbar } from "@mui/material";
 import {
-  Avatar,
   Button,
   Card,
   Input,
@@ -15,7 +14,7 @@ import {
   Spinner
 } from "@heroui/react";
 import apiClient from "../../api/client";
-import { DEFAULT_USER_ID } from "../../config/env";
+import { useAuth } from "../../contexts/AuthContext";
 
 const DEFAULT_PROFILE = {
   avatar: viettel,
@@ -71,6 +70,8 @@ const ProfileSelect = ({ label, value, placeholder, options, onChange }) => (
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+  const avatarInputRef = useRef(null);
   // Dữ liệu mặc định cho profile
   // State cho profile
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
@@ -100,11 +101,12 @@ const Profile = () => {
   };
   
   // ID người dùng cố định - trong thực tế sẽ lấy từ authentication
-  const userId = DEFAULT_USER_ID;
+  const userId = user?.id;
 
   // Fetch dữ liệu profile từ API khi component mount
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!userId) return;
       setLoading(true);
       try {
         // Lấy thông tin người dùng
@@ -137,6 +139,7 @@ const Profile = () => {
           setProfile({
             ...DEFAULT_PROFILE,
             ...userResponse.data,
+            avatar: userResponse.data.avatar || DEFAULT_PROFILE.avatar,
             availability: availability
           });
         }
@@ -207,6 +210,44 @@ const Profile = () => {
     });
   };
 
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setNotification({
+        open: true,
+        message: "Vui lòng chọn file ảnh.",
+        severity: "error"
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({
+        open: true,
+        message: "Ảnh đại diện không được vượt quá 2MB.",
+        severity: "error"
+      });
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfile((current) => ({
+        ...current,
+        avatar: String(reader.result)
+      }));
+      event.target.value = "";
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Xử lý cập nhật profile
   const handleUpdateProfile = async () => {
     setSaving(true);
@@ -222,6 +263,10 @@ const Profile = () => {
       const userData = {
         name: profile.name,
         email: profile.email,
+        avatar:
+          profile.avatar && profile.avatar !== viettel
+            ? profile.avatar
+            : undefined,
         address: profile.address,
         phone: profile.phone,
         jobType: profile.jobType,
@@ -236,6 +281,18 @@ const Profile = () => {
       const response = await apiClient.post(`/api/v1/users/${userId}`, userData);
       
       if (response.status === 200) {
+        setProfile((current) => ({
+          ...current,
+          ...response.data,
+          avatar: response.data.avatar || current.avatar || DEFAULT_PROFILE.avatar
+        }));
+        updateUser({
+          id: response.data.id,
+          name: response.data.name,
+          email: response.data.email,
+          role: response.data.role,
+          avatar: response.data.avatar,
+        });
         setNotification({
           open: true,
           message: (
@@ -292,10 +349,28 @@ const Profile = () => {
         <Card.Root className="profile-card">
           <Card.Header className="profile-header">
             <div className="profile-avatar-section">
-              <Avatar
-                src={profile.avatar} 
-                alt="Avatar" 
-                className="profile-avatar" 
+              <button
+                type="button"
+                className="avatar-upload-button"
+                onClick={handleAvatarClick}
+                aria-label="Cập nhật ảnh đại diện"
+              >
+                <img
+                  src={profile.avatar}
+                  alt="Avatar"
+                  className="profile-avatar"
+                  onError={(event) => {
+                    event.currentTarget.src = viettel;
+                  }}
+                />
+                <span className="avatar-upload-overlay">Đổi ảnh</span>
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="avatar-file-input"
+                onChange={handleAvatarChange}
               />
               <div className="profile-info">
                 <h2 className="profile-name">{profile.name}</h2>

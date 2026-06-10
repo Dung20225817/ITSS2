@@ -36,6 +36,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     const {
       name,
       email,
+      avatar,
       address,
       phone,
       jobType,
@@ -66,6 +67,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
       update: {
         name,
         email,
+        avatar: typeof avatar === "string" ? avatar : undefined,
         address,
         phone,
         jobType,
@@ -83,6 +85,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
         id: userId,
         name: name || "Unknown",
         email: email || `unknown-${Date.now()}@example.com`,
+        avatar: typeof avatar === "string" ? avatar : undefined,
         address,
         phone,
         jobType,

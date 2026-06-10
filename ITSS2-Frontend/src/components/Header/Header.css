@@ -19,11 +19,17 @@
   gap: 5px;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
 .logo {
   height: 25px;
 }
 
 .header-item {
+  position: relative;
   height: 100%;
   width: fit-content;
   display: flex;
@@ -41,4 +47,66 @@
 
 .header-item.active {
   color: black;
+}
+
+.header-item.active::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background-color: #111;
+}
+
+.header-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  background-color: #16a34a !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.header-user-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Inter Tight", sans-serif;
+}
+
+.header-auth-button {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  font-family: "Inter Tight", sans-serif !important;
+}
+
+.header-register-button {
+  border-radius: 8px !important;
+  background-color: #222 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  font-family: "Inter Tight", sans-serif !important;
+}
+
+.header-register-button:hover {
+  background-color: #111 !important;
+}
+
+@media (max-width: 980px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .header-user-name {
+    display: none;
+  }
 }

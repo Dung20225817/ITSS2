@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -148,6 +149,8 @@ async function main() {
   await prisma.user.deleteMany();
 
 
+  const demoPasswordHash = await bcrypt.hash("Password123", 12);
+
   const createdCompanies = await Promise.all(
     companies.map((company) => prisma.company.create({ data: company }))
   );
@@ -157,6 +160,7 @@ async function main() {
       id: "demo-student-1",
       name: "Nguyen Van A",
       email: "student@example.com",
+      passwordHash: demoPasswordHash,
       role: "student",
       address: "Ha Noi",
       phone: "0123456789",

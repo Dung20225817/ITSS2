@@ -68,6 +68,70 @@ const ProfileSelect = ({ label, value, placeholder, options, onChange }) => (
   </div>
 );
 
+const PERIOD_TIME_SLOTS = {
+  sang: ["08:00", "10:00", "12:00"],
+  chieu: ["14:00", "16:00"],
+  toi: ["18:00", "20:00", "22:00"]
+};
+
+const normalizePeriod = (period = "") =>
+  String(period)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^ca\s+/, "")
+    .trim();
+
+const scheduleToSelectedSlots = (workingSchedule = []) => {
+  const slots = new Set();
+
+  if (!Array.isArray(workingSchedule)) {
+    return slots;
+  }
+
+  workingSchedule.forEach((schedule) => {
+    if (!schedule?.day) return;
+
+    if (schedule.time) {
+      slots.add(`${schedule.day}|${schedule.time}`);
+      return;
+    }
+
+    const times = PERIOD_TIME_SLOTS[normalizePeriod(schedule.period)] || [];
+    times.forEach((time) => {
+      slots.add(`${schedule.day}|${time}`);
+    });
+  });
+
+  return slots;
+};
+
+const getScheduleStorageKey = (userId) => `profile-working-schedule:${userId}`;
+
+const readStoredSchedule = (userId) => {
+  if (!userId) return null;
+
+  try {
+    const storedValue = window.localStorage.getItem(getScheduleStorageKey(userId));
+    return storedValue ? JSON.parse(storedValue) : null;
+  } catch (_error) {
+    return null;
+  }
+};
+
+const writeStoredSchedule = (userId, workingSchedule) => {
+  if (!userId) return;
+
+  try {
+    window.localStorage.setItem(
+      getScheduleStorageKey(userId),
+      JSON.stringify(workingSchedule)
+    );
+  } catch (_error) {
+    // Ignore storage failures; the backend remains the source of truth.
+  }
+};
+
 const Profile = () => {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
@@ -136,12 +200,21 @@ const Profile = () => {
           }
           
           // Gán dữ liệu vào state
+          const apiSchedule = userResponse.data.workingSchedule || [];
+          const storedSchedule = readStoredSchedule(userId);
+          const nextWorkingSchedule =
+            scheduleToSelectedSlots(apiSchedule).size > 0 || storedSchedule === null
+              ? apiSchedule
+              : storedSchedule;
+
           setProfile({
             ...DEFAULT_PROFILE,
             ...userResponse.data,
             avatar: userResponse.data.avatar || DEFAULT_PROFILE.avatar,
-            availability: availability
+            availability: availability,
+            workingSchedule: nextWorkingSchedule
           });
+          setSelectedTimeSlots(scheduleToSelectedSlots(nextWorkingSchedule));
         }
         
         // Lấy danh sách danh mục công việc
@@ -163,34 +236,9 @@ const Profile = () => {
     
     fetchUserData();
   }, [userId]);
-
-    useEffect(() => {
-    if (profile.workingSchedule && Array.isArray(profile.workingSchedule)) {
-      const slots = new Set();
-      
-      profile.workingSchedule.forEach(schedule => {
-        if (schedule.time) {
-          // New hourly format
-          slots.add(`${schedule.day}|${schedule.time}`);
-        } else if (schedule.period) {
-          // Old period format: convert to time slots
-          // Assuming: "sáng" = 08:00, "chiều" = 14:00, "tối" = 18:00
-          const periodTimes = {
-            "sáng": ["08:00", "10:00", "12:00"],
-            "chiều": ["14:00", "16:00"],
-            "tối": ["18:00", "20:00", "22:00"]
-          };
-          
-          const times = periodTimes[schedule.period] || [];
-          times.forEach(time => {
-            slots.add(`${schedule.day}|${time}`);
-          });
-        }
-      });
-      
-      setSelectedTimeSlots(slots);
-    }
-  }, [profile._id]);
+  useEffect(() => {
+    setSelectedTimeSlots(scheduleToSelectedSlots(profile.workingSchedule));
+  }, [profile.workingSchedule]);
 
   const toggleTimeSlot = (day, time) => {
     const key = `${day}|${time}`;
@@ -281,17 +329,27 @@ const Profile = () => {
       const response = await apiClient.post(`/api/v1/users/${userId}`, userData);
       
       if (response.status === 200) {
+        const responseSchedule = response.data.workingSchedule || [];
+        const nextWorkingSchedule =
+          scheduleToSelectedSlots(responseSchedule).size > 0
+            ? responseSchedule
+            : workingSchedule;
+
         setProfile((current) => ({
           ...current,
           ...response.data,
-          avatar: response.data.avatar || current.avatar || DEFAULT_PROFILE.avatar
+          avatar: response.data.avatar || current.avatar || DEFAULT_PROFILE.avatar,
+          workingSchedule: nextWorkingSchedule
         }));
+        setSelectedTimeSlots(scheduleToSelectedSlots(nextWorkingSchedule));
+        writeStoredSchedule(userId, workingSchedule);
         updateUser({
           id: response.data.id,
           name: response.data.name,
           email: response.data.email,
           role: response.data.role,
           avatar: response.data.avatar,
+          workingSchedule: nextWorkingSchedule,
         });
         setNotification({
           open: true,

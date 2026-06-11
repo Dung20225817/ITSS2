@@ -3,7 +3,13 @@ export const mapJobToResponse = (job: any) => {
   return {
     ...job,
     _id: job.id,
-    workingSchedule: job.schedules ? job.schedules.map((s: any) => ({ day: s.day, period: s.period })) : []
+    workingSchedule: job.schedules
+      ? job.schedules.map((s: any) => ({
+          day: s.day,
+          period: s.period,
+          time: s.time
+        }))
+      : []
   };
 };
 
@@ -12,6 +18,12 @@ export const mapUserToResponse = (user: any) => {
   return {
     ...user,
     _id: user.id,
-    workingSchedule: user.schedules ? user.schedules.map((s: any) => ({ day: s.day, period: s.period })) : []
+    workingSchedule: user.schedules
+      ? user.schedules.map((s: any) => ({
+          day: s.day,
+          period: s.period,
+          time: s.time
+        }))
+      : []
   };
 };

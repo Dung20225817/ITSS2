@@ -10,8 +10,7 @@
     "test": "npm run typecheck",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
-    "db:migrate": "prisma migrate dev",
-    "db:import": "ts-node prisma/import-jobs.ts"
+    "db:migrate": "prisma migrate dev"
   },
   "author": "",
   "license": "ISC",

@@ -1,0 +1,92 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "ITSS2-Backend/**"
+      - "ITSS2-Infra/**"
+      - ".github/workflows/deploy-backend.yml"
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read
+
+env:
+  AWS_REGION: ap-southeast-1
+  ECR_REPOSITORY: 308621094806.dkr.ecr.ap-southeast-1.amazonaws.com/itss2-backend
+  TF_STATE_BUCKET: itss2-tfstate-20260610
+  TF_LOCK_TABLE: itss2-terraform-locks
+
+jobs:
+  deploy:
+    name: Build & deploy backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── AWS auth via OIDC (no long-lived keys) ──────────────────────────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ── Build & push Docker image to ECR ────────────────────────────────────
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: tag
+        run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -t ${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.IMAGE_TAG }} \
+            ITSS2-Backend/
+          docker push ${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.IMAGE_TAG }}
+
+      # ── Terraform apply (update Lightsail deployment version) ────────────────
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.8"
+
+      - name: Terraform init
+        working-directory: ITSS2-Infra/lightsail
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=lightsail/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ env.TF_LOCK_TABLE }}"
+
+      - name: Terraform apply
+        working-directory: ITSS2-Infra/lightsail
+        run: |
+          terraform apply \
+            -auto-approve \
+            -var="image_tag=${{ steps.tag.outputs.IMAGE_TAG }}"
+
+      # ── Smoke test ───────────────────────────────────────────────────────────
+      - name: Smoke test
+        run: |
+          BASE="https://itss2-backend.4ybp9r2vbbwrr.ap-southeast-1.cs.amazonlightsail.com"
+          for endpoint in /healthz /readyz; do
+            echo "Checking $BASE$endpoint ..."
+            for i in 1 2 3 4 5; do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$endpoint" || echo "000")
+              if [ "$STATUS" = "200" ]; then
+                echo "  ✓ $endpoint → 200"
+                break
+              fi
+              echo "  Attempt $i: $STATUS — retrying in 15s..."
+              sleep 15
+            done
+            [ "$STATUS" = "200" ] || { echo "  ✗ $endpoint still not 200 after 5 attempts"; exit 1; }
+          done

@@ -75,3 +75,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "tf_state_bucket" {
+  description = "S3 bucket name holding Terraform state (used in IAM policy for CI role)."
+  type        = string
+  default     = "itss2-tfstate-20260610"
+}
+
+variable "tf_lock_table" {
+  description = "DynamoDB table name used for Terraform state locking."
+  type        = string
+  default     = "itss2-terraform-locks"
+}

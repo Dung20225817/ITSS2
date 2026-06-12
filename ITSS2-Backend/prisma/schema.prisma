@@ -12,6 +12,8 @@ model User {
   id              String   @id @default(uuid())
   name            String
   email           String   @unique
+  passwordHash    String?
+  avatar          String?
   role            String   @default("student")
   
   // Fields mapped from Mongoose
@@ -30,6 +32,21 @@ model User {
   schedules       Schedule[]
   matches         MatchResult[]
   reviews         Review[]
+  refreshTokens   RefreshToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Company {

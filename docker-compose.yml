@@ -17,5 +17,16 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: itss2_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - itss2_redisdata:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
 volumes:
   itss2_pgdata:
+  itss2_redisdata:

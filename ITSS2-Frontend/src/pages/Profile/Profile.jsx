@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import Header from "../../components/Header";
@@ -6,7 +6,6 @@ import Footer from "../../components/Footer/Footer";
 import viettel from "../../assets/viettel.png";
 import { Alert, Snackbar } from "@mui/material";
 import {
-  Avatar,
   Button,
   Card,
   Input,
@@ -15,7 +14,7 @@ import {
   Spinner
 } from "@heroui/react";
 import apiClient from "../../api/client";
-import { DEFAULT_USER_ID } from "../../config/env";
+import { useAuth } from "../../contexts/AuthContext";
 
 const DEFAULT_PROFILE = {
   avatar: viettel,
@@ -69,8 +68,74 @@ const ProfileSelect = ({ label, value, placeholder, options, onChange }) => (
   </div>
 );
 
+const PERIOD_TIME_SLOTS = {
+  sang: ["08:00", "10:00", "12:00"],
+  chieu: ["14:00", "16:00"],
+  toi: ["18:00", "20:00", "22:00"]
+};
+
+const normalizePeriod = (period = "") =>
+  String(period)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^ca\s+/, "")
+    .trim();
+
+const scheduleToSelectedSlots = (workingSchedule = []) => {
+  const slots = new Set();
+
+  if (!Array.isArray(workingSchedule)) {
+    return slots;
+  }
+
+  workingSchedule.forEach((schedule) => {
+    if (!schedule?.day) return;
+
+    if (schedule.time) {
+      slots.add(`${schedule.day}|${schedule.time}`);
+      return;
+    }
+
+    const times = PERIOD_TIME_SLOTS[normalizePeriod(schedule.period)] || [];
+    times.forEach((time) => {
+      slots.add(`${schedule.day}|${time}`);
+    });
+  });
+
+  return slots;
+};
+
+const getScheduleStorageKey = (userId) => `profile-working-schedule:${userId}`;
+
+const readStoredSchedule = (userId) => {
+  if (!userId) return null;
+
+  try {
+    const storedValue = window.localStorage.getItem(getScheduleStorageKey(userId));
+    return storedValue ? JSON.parse(storedValue) : null;
+  } catch (_error) {
+    return null;
+  }
+};
+
+const writeStoredSchedule = (userId, workingSchedule) => {
+  if (!userId) return;
+
+  try {
+    window.localStorage.setItem(
+      getScheduleStorageKey(userId),
+      JSON.stringify(workingSchedule)
+    );
+  } catch (_error) {
+    // Ignore storage failures; the backend remains the source of truth.
+  }
+};
+
 const Profile = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+  const avatarInputRef = useRef(null);
   // Dữ liệu mặc định cho profile
   // State cho profile
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
@@ -87,7 +152,7 @@ const Profile = () => {
 
   
   const TIME_SLOTS = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
-  const SCHEDULE_DAYS = ["Th? 2", "Th? 3", "Th? 4", "Th? 5", "Th? 6", "Th? 7", "Ch? nh?t"];
+  const SCHEDULE_DAYS = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
 
   const [selectedTimeSlots, setSelectedTimeSlots] = useState(new Set());
 
@@ -100,11 +165,12 @@ const Profile = () => {
   };
   
   // ID người dùng cố định - trong thực tế sẽ lấy từ authentication
-  const userId = DEFAULT_USER_ID;
+  const userId = user?.id;
 
   // Fetch dữ liệu profile từ API khi component mount
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!userId) return;
       setLoading(true);
       try {
         // Lấy thông tin người dùng
@@ -134,11 +200,21 @@ const Profile = () => {
           }
           
           // Gán dữ liệu vào state
+          const apiSchedule = userResponse.data.workingSchedule || [];
+          const storedSchedule = readStoredSchedule(userId);
+          const nextWorkingSchedule =
+            scheduleToSelectedSlots(apiSchedule).size > 0 || storedSchedule === null
+              ? apiSchedule
+              : storedSchedule;
+
           setProfile({
             ...DEFAULT_PROFILE,
             ...userResponse.data,
-            availability: availability
+            avatar: userResponse.data.avatar || DEFAULT_PROFILE.avatar,
+            availability: availability,
+            workingSchedule: nextWorkingSchedule
           });
+          setSelectedTimeSlots(scheduleToSelectedSlots(nextWorkingSchedule));
         }
         
         // Lấy danh sách danh mục công việc
@@ -160,34 +236,9 @@ const Profile = () => {
     
     fetchUserData();
   }, [userId]);
-
-    useEffect(() => {
-    if (profile.workingSchedule && Array.isArray(profile.workingSchedule)) {
-      const slots = new Set();
-      
-      profile.workingSchedule.forEach(schedule => {
-        if (schedule.time) {
-          // New hourly format
-          slots.add(`${schedule.day}|${schedule.time}`);
-        } else if (schedule.period) {
-          // Old period format: convert to time slots
-          // Assuming: "sáng" = 08:00, "chiều" = 14:00, "tối" = 18:00
-          const periodTimes = {
-            "sáng": ["08:00", "10:00", "12:00"],
-            "chiều": ["14:00", "16:00"],
-            "tối": ["18:00", "20:00", "22:00"]
-          };
-          
-          const times = periodTimes[schedule.period] || [];
-          times.forEach(time => {
-            slots.add(`${schedule.day}|${time}`);
-          });
-        }
-      });
-      
-      setSelectedTimeSlots(slots);
-    }
-  }, [profile._id]);
+  useEffect(() => {
+    setSelectedTimeSlots(scheduleToSelectedSlots(profile.workingSchedule));
+  }, [profile.workingSchedule]);
 
   const toggleTimeSlot = (day, time) => {
     const key = `${day}|${time}`;
@@ -207,6 +258,44 @@ const Profile = () => {
     });
   };
 
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setNotification({
+        open: true,
+        message: "Vui lòng chọn file ảnh.",
+        severity: "error"
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({
+        open: true,
+        message: "Ảnh đại diện không được vượt quá 2MB.",
+        severity: "error"
+      });
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfile((current) => ({
+        ...current,
+        avatar: String(reader.result)
+      }));
+      event.target.value = "";
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Xử lý cập nhật profile
   const handleUpdateProfile = async () => {
     setSaving(true);
@@ -222,6 +311,10 @@ const Profile = () => {
       const userData = {
         name: profile.name,
         email: profile.email,
+        avatar:
+          profile.avatar && profile.avatar !== viettel
+            ? profile.avatar
+            : undefined,
         address: profile.address,
         phone: profile.phone,
         jobType: profile.jobType,
@@ -236,6 +329,28 @@ const Profile = () => {
       const response = await apiClient.post(`/api/v1/users/${userId}`, userData);
       
       if (response.status === 200) {
+        const responseSchedule = response.data.workingSchedule || [];
+        const nextWorkingSchedule =
+          scheduleToSelectedSlots(responseSchedule).size > 0
+            ? responseSchedule
+            : workingSchedule;
+
+        setProfile((current) => ({
+          ...current,
+          ...response.data,
+          avatar: response.data.avatar || current.avatar || DEFAULT_PROFILE.avatar,
+          workingSchedule: nextWorkingSchedule
+        }));
+        setSelectedTimeSlots(scheduleToSelectedSlots(nextWorkingSchedule));
+        writeStoredSchedule(userId, workingSchedule);
+        updateUser({
+          id: response.data.id,
+          name: response.data.name,
+          email: response.data.email,
+          role: response.data.role,
+          avatar: response.data.avatar,
+          workingSchedule: nextWorkingSchedule,
+        });
         setNotification({
           open: true,
           message: (
@@ -292,10 +407,28 @@ const Profile = () => {
         <Card.Root className="profile-card">
           <Card.Header className="profile-header">
             <div className="profile-avatar-section">
-              <Avatar
-                src={profile.avatar} 
-                alt="Avatar" 
-                className="profile-avatar" 
+              <button
+                type="button"
+                className="avatar-upload-button"
+                onClick={handleAvatarClick}
+                aria-label="Cập nhật ảnh đại diện"
+              >
+                <img
+                  src={profile.avatar}
+                  alt="Avatar"
+                  className="profile-avatar"
+                  onError={(event) => {
+                    event.currentTarget.src = viettel;
+                  }}
+                />
+                <span className="avatar-upload-overlay">Đổi ảnh</span>
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="avatar-file-input"
+                onChange={handleAvatarChange}
               />
               <div className="profile-info">
                 <h2 className="profile-name">{profile.name}</h2>
@@ -449,7 +582,7 @@ const Profile = () => {
 
   {selectedTimeSlots.size > 0 && (
     <div className="schedule-summary">
-      ? <strong>?? ch?n {selectedTimeSlots.size} khung gi?</strong> ? H? th?ng ?ang t? ??ng t?m ki?m c?ng vi?c ph? h?p...
+      <strong>Đã chọn {selectedTimeSlots.size} khung giờ.</strong> Hệ thống đang tự động tìm kiếm công việc phù hợp...
     </div>
   )}
 </div>

@@ -17,15 +17,22 @@
   "description": "",
   "devDependencies": {
     "@prisma/client": "^5.22.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "ioredis": "^5.11.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.14.2",
     "nodemon": "^3.1.10"
   },

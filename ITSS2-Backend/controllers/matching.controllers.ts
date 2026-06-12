@@ -24,12 +24,14 @@ export const runMatching = async (req: Request, res: Response) => {
       include: { schedules: true, company: true }
     });
 
-    let matchCount = 0;
+    const matchedJobIds: string[] = [];
 
     for (const job of jobs) {
       const { score, reasons } = calculateMatchScore(user, job);
 
       if (score >= 60) {
+        matchedJobIds.push(job.id);
+
         // Find existing match
         const existingMatch = await prisma.matchResult.findFirst({
           where: { userId, jobId: job.id }
@@ -51,11 +53,22 @@ export const runMatching = async (req: Request, res: Response) => {
             }
           });
         }
-        matchCount++;
       }
     }
 
-    res.status(200).json({ message: `Successfully generated ${matchCount} matches.` });
+    await prisma.matchResult.deleteMany({
+      where: {
+        userId,
+        ...(matchedJobIds.length > 0
+          ? { jobId: { notIn: matchedJobIds } }
+          : {}),
+      },
+    });
+
+    res.status(200).json({
+      message: `Successfully generated ${matchedJobIds.length} matches.`,
+      matchCount: matchedJobIds.length,
+    });
   } catch (error) {
     console.error("Run Matching Error:", error);
     res.status(500).json({ message: "Server error" });

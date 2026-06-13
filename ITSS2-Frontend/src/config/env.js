@@ -3,4 +3,4 @@ export const API_BASE_URL = (
 ).replace(/\/+$/, "");
 
 export const DEFAULT_USER_ID =
-  import.meta.env.VITE_DEFAULT_USER_ID || "682b71380c69774bd1f056bd";
+  import.meta.env.VITE_DEFAULT_USER_ID || "demo-student-1";

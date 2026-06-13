@@ -120,7 +120,7 @@ export const setAuthCookies = (
   res.cookie(ACCESS_COOKIE_NAME, accessToken, {
     httpOnly: true,
     secure: cookieSecure(),
-    sameSite: "lax",
+    sameSite: cookieSecure() ? "none" : "lax",
     path: "/",
     maxAge: accessTokenTtlSeconds() * 1000,
   });
@@ -128,7 +128,7 @@ export const setAuthCookies = (
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, {
     httpOnly: true,
     secure: cookieSecure(),
-    sameSite: "lax",
+    sameSite: cookieSecure() ? "none" : "lax",
     path: "/api/v1/auth",
     maxAge: refreshTokenTtlSeconds() * 1000,
   });
@@ -138,14 +138,14 @@ export const clearAuthCookies = (res: Response): void => {
   res.clearCookie(ACCESS_COOKIE_NAME, {
     httpOnly: true,
     secure: cookieSecure(),
-    sameSite: "lax",
+    sameSite: cookieSecure() ? "none" : "lax",
     path: "/",
   });
 
   res.clearCookie(REFRESH_COOKIE_NAME, {
     httpOnly: true,
     secure: cookieSecure(),
-    sameSite: "lax",
+    sameSite: cookieSecure() ? "none" : "lax",
     path: "/api/v1/auth",
   });
 };

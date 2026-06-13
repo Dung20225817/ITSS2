@@ -110,10 +110,13 @@ resource "aws_lightsail_container_service_deployment_version" "backend" {
     image          = "${aws_ecr_repository.backend.repository_url}:${var.image_tag}"
 
     environment = {
-      NODE_ENV     = "production"
-      PORT         = tostring(var.container_port)
-      CORS_ORIGINS = var.cors_origins
-      DATABASE_URL = local.database_url
+      NODE_ENV           = "production"
+      PORT               = tostring(var.container_port)
+      CORS_ORIGINS       = var.cors_origins
+      DATABASE_URL       = local.database_url
+      JWT_ACCESS_SECRET  = var.jwt_access_secret
+      JWT_REFRESH_SECRET = var.jwt_refresh_secret
+      COOKIE_SECURE      = var.cookie_secure
     }
 
     ports = {

@@ -11,6 +11,7 @@ COPY index.ts ./
 COPY config ./config
 COPY controllers ./controllers
 COPY helper ./helper
+COPY middlewares ./middlewares
 COPY models ./models
 COPY routes ./routes
 

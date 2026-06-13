@@ -68,6 +68,10 @@ jobs:
 
       - name: Terraform apply
         working-directory: ITSS2-Infra/lightsail
+        env:
+          TF_VAR_jwt_access_secret: ${{ secrets.JWT_ACCESS_SECRET }}
+          TF_VAR_jwt_refresh_secret: ${{ secrets.JWT_REFRESH_SECRET }}
+          TF_VAR_cookie_secure: "true"
         run: |
           terraform apply \
             -auto-approve \

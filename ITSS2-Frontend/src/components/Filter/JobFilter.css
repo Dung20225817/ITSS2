@@ -30,7 +30,7 @@
 }
 
 .clear-all-btn {
-  color: #22c55e;
+  color: #49B3FC;
   background: none;
   border: none;
   font-size: 14px;
@@ -60,7 +60,7 @@
 }
 
 .expand-icon {
-  color: #22c55e;
+  color: #49B3FC;
   transition: transform 0.3s;
 }
 
@@ -84,7 +84,7 @@
   width: 18px;
   height: 18px;
   margin-right: 10px;
-  accent-color: #22c55e;
+  accent-color: #49B3FC;
   flex-shrink: 0;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .salary-input:focus {
-  border-color: #22c55e;
+  border-color: #49B3FC;
   outline: none;
 }
 
@@ -148,7 +148,7 @@
   margin: 0 auto;
   background: none;
   border: none;
-  color: #22c55e;
+  color: #49B3FC;
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
@@ -156,7 +156,7 @@
 }
 
 .collapse-button:hover {
-  color: #16a34a;
+  color: #35a8f5;
 }
 
 /* Nút Lọc ở dưới cùng */
@@ -164,7 +164,7 @@
   display: block;
   width: 100%;
   padding: 12px;
-  background-color: #22c55e;
+  background-color: #49B3FC;
   color: white;
   border: none;
   border-radius: 5px;
@@ -175,19 +175,19 @@
 }
 
 .filter-btn:hover {
-  background-color: #16a34a;
+  background-color: #35a8f5;
 }
 
 /* Chọn màu của checkbox khi được chọn */
 input[type="checkbox"]:checked {
-  background-color: #22c55e;
-  border-color: #22c55e;
+  background-color: #49B3FC;
+  border-color: #49B3FC;
 }
 
 /* Style cho checkbox được chọn */
 input[type="checkbox"]:checked + label {
   font-weight: 500;
-  color: #22c55e;
+  color: #49B3FC;
 }
 
 /* Đảm bảo các phần tử không bị tràn */

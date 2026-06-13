@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: itss2_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: itss2_user
+      POSTGRES_PASSWORD: itss2_password
+      POSTGRES_DB: itss2_mvp
+    ports:
+      - "5432:5432"
+    volumes:
+      - itss2_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U itss2_user -d itss2_mvp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: itss2_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - itss2_redisdata:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+volumes:
+  itss2_pgdata:
+  itss2_redisdata:

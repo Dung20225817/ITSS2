@@ -42,6 +42,14 @@
   gap: 30px;
 }
 
+.home-job-grid {
+  width: min(1500px, calc(100vw - 80px));
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
 .job-list-title-container {
   width: 100%;
   display: flex;
@@ -62,7 +70,8 @@
 
 .view-all-btn {
   font-weight: 500;
-  color: #22c55e;
+  color: #222;
+  font-family: "Inter Tight";
   font-size: 24px;
   text-decoration: underline;
   margin: 0 auto;
@@ -106,13 +115,69 @@
 }
 
 .company-list {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  justify-items: center;
-  align-items: center;
-  column-gap: 10px;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
-.company-list img {
+.company-list::before,
+.company-list::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.company-list::before {
+  left: 0;
+  background: linear-gradient(90deg, #fff 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.company-list::after {
+  right: 0;
+  background: linear-gradient(270deg, #fff 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.company-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 80px;
+  animation: company-scroll 18s linear infinite;
+}
+
+.company-list:hover .company-track {
+  animation-play-state: paused;
+}
+
+.company-track img {
   width: 120px;
+  flex: 0 0 auto;
+}
+
+@keyframes company-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 1180px) {
+  .home-job-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .home-job-grid {
+    width: 100%;
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
 }

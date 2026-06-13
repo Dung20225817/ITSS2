@@ -1,5 +1,5 @@
 variable "aws_region" {
-  description = "AWS region for Lightsail."
+  description = "AWS region."
   type        = string
   default     = "ap-southeast-1"
 }
@@ -10,14 +10,40 @@ variable "service_name" {
   default     = "itss2-backend"
 }
 
-variable "image" {
-  description = "Backend container image URL and tag."
+variable "image_tag" {
+  description = "Backend Docker image tag. Set to empty string to skip deployment (phase 1 only)."
   type        = string
+  default     = ""
 }
 
-variable "mongo_secret_arn" {
-  description = "Secrets Manager ARN containing MONGO_URL."
+variable "ecr_repository_name" {
+  description = "ECR repository name."
   type        = string
+  default     = "itss2-backend"
+}
+
+variable "ecr_force_delete" {
+  description = "Allow Terraform to delete the ECR repo when it still contains images."
+  type        = bool
+  default     = false
+}
+
+variable "db_name" {
+  description = "Lightsail relational database resource name."
+  type        = string
+  default     = "itss2-postgres"
+}
+
+variable "db_database" {
+  description = "PostgreSQL database name."
+  type        = string
+  default     = "itss2"
+}
+
+variable "db_username" {
+  description = "PostgreSQL master username."
+  type        = string
+  default     = "itss2_admin"
 }
 
 variable "container_port" {
@@ -27,7 +53,7 @@ variable "container_port" {
 }
 
 variable "cors_origins" {
-  description = "Comma-separated allowed CORS origins for the backend."
+  description = "Comma-separated allowed CORS origins."
   type        = string
   default     = "*"
 }
@@ -48,4 +74,16 @@ variable "tags" {
   description = "Tags applied to AWS resources."
   type        = map(string)
   default     = {}
+}
+
+variable "tf_state_bucket" {
+  description = "S3 bucket name holding Terraform state (used in IAM policy for CI role)."
+  type        = string
+  default     = "itss2-tfstate-20260610"
+}
+
+variable "tf_lock_table" {
+  description = "DynamoDB table name used for Terraform state locking."
+  type        = string
+  default     = "itss2-terraform-locks"
 }

@@ -2,7 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
-
+final_jobs.json
 # Build outputs
 dist/
 dist-ssr/
@@ -53,9 +53,19 @@ terraform.rc
 
 # Python
 ITSS2-Infra/.venv/
+ITSS2-Backend/.venv/
 **/__pycache__/
 *.pyc
 *.pyo
 
 # Vercel
 .vercel/
+
+
+
+
+
+
+
+
+

@@ -58,6 +58,26 @@ variable "cors_origins" {
   default     = "*"
 }
 
+variable "jwt_access_secret" {
+  description = "JWT access token signing secret."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "jwt_refresh_secret" {
+  description = "JWT refresh token signing secret."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "cookie_secure" {
+  description = "Set COOKIE_SECURE=true for production HTTPS deployment."
+  type        = string
+  default     = "true"
+}
+
 variable "power" {
   description = "Lightsail container service power."
   type        = string

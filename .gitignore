@@ -50,6 +50,7 @@ override.tf.json
 *_override.tf.json
 terraform.rc
 .terraformrc
+**/secrets.tfvars
 
 # Python
 ITSS2-Infra/.venv/

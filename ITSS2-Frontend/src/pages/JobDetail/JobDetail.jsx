@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import BusinessIcon from "@mui/icons-material/Business";
 import CategoryIcon from "@mui/icons-material/Category";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -54,6 +55,31 @@ const getTimeAgo = (dateStr) => {
   if (diffDays < 7) return `Đăng ${diffDays} ngày trước`;
   if (diffDays < 30) return `Đăng ${Math.floor(diffDays / 7)} tuần trước`;
   return `Đăng ${Math.floor(diffDays / 30)} tháng trước`;
+};
+
+const PERIOD_DISPLAY = { sang: "Sáng", chieu: "Chiều", toi: "Tối" };
+
+const summarizeSchedules = (schedules) => {
+  if (!schedules?.length) return "";
+  const grouped = new Map();
+  schedules.forEach(({ day, period, time }) => {
+    if (!day) return;
+    const normalized = period ? period.toLowerCase().replace(/^ca /, "") : "";
+    const label = PERIOD_DISPLAY[normalized] || (time ? time : "");
+    if (!label) return;
+    const set = grouped.get(day) || new Set();
+    set.add(label);
+    grouped.set(day, set);
+  });
+  if (!grouped.size) return "";
+  return Array.from(grouped.entries())
+    .map(([day, labels]) => `${day}: ${Array.from(labels).join(", ")}`)
+    .join(" · ");
+};
+
+const formatWorkingTime = (job) => {
+  if (job.workingTime) return job.workingTime;
+  return summarizeSchedules(job.schedules);
 };
 
 const JobDetail = () => {
@@ -282,6 +308,7 @@ const JobDetail = () => {
                 />
                 <DetailItem icon={<CalendarTodayIcon />} label="Thời gian ứng tuyển" value={applicationRange} />
                 <DetailItem icon={<CalendarTodayIcon />} label="Thời gian làm chính thức" value={workingRange} />
+                <DetailItem icon={<AccessTimeIcon />} label="Thời gian làm việc" value={formatWorkingTime(job)} />
               </div>
 
             </article>
@@ -426,6 +453,7 @@ const JobDetail = () => {
               <DetailItem icon={<MonetizationOnIcon />} label="Lương" value={salary} />
               <DetailItem icon={<LocationOnIcon />} label="Địa điểm" value={job.address} />
               <DetailItem icon={<WorkOutlineIcon />} label="Loại việc" value={job.jobType} />
+              <DetailItem icon={<AccessTimeIcon />} label="Ca làm việc" value={formatWorkingTime(job)} />
               <DetailItem icon={<CalendarTodayIcon />} label="Ngày đăng" value={postedAt} />
             </div>
 

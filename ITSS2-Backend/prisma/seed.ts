@@ -158,6 +158,9 @@ async function main() {
   const dataPath = path.join(__dirname, "data", "jobs.json");
   const rawJobs: RawJob[] = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
 
+  const logoMapPath = path.join(__dirname, "data", "company-logos.json");
+  const logoMap: Record<string, string> = JSON.parse(fs.readFileSync(logoMapPath, "utf-8"));
+
   // ── 2. Companies ──────────────────────────────────────────────────────────
   // Build a unique set of company names from the real dataset
   const realCompanyNames = [...new Set(rawJobs.map((j) => j.company_name))].filter(
@@ -188,7 +191,7 @@ async function main() {
           location: null,
           industry,
           address: null,
-          logo: `https://via.placeholder.com/150?text=${encodeURIComponent(name.slice(0, 10))}`,
+          logo: logoMap[name] ?? `https://via.placeholder.com/150?text=${encodeURIComponent(name.slice(0, 10))}`,
         },
       });
     })

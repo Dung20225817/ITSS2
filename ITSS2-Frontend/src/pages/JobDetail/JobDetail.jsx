@@ -10,6 +10,7 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import PeopleIcon from "@mui/icons-material/People";
 import StarIcon from "@mui/icons-material/Star";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import { Alert, Snackbar } from "@mui/material";
 import apiClient from "../../api/client";
 import companyLogo from "../../assets/company-logo.png";
 import Header from "../../components/Header";
@@ -92,6 +93,10 @@ const JobDetail = () => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [actionNotice, setActionNotice] = useState({
+    open: false,
+    message: ""
+  });
 
   const userId = import.meta.env.VITE_DEFAULT_USER_ID || "demo-student-1";
 
@@ -207,6 +212,22 @@ const JobDetail = () => {
     } finally {
       setSubmittingReview(false);
     }
+  };
+
+  const showActionNotice = (message) => {
+    setActionNotice({
+      open: true,
+      message
+    });
+  };
+
+  const closeActionNotice = (_, reason) => {
+    if (reason === "clickaway") return;
+
+    setActionNotice((prev) => ({
+      ...prev,
+      open: false
+    }));
   };
 
   if (loading) {
@@ -440,10 +461,18 @@ const JobDetail = () => {
 
           <aside className="jd-sidebar">
             <div className="jd-card jd-apply-card">
-              <button className="jd-apply-btn" type="button">
+              <button
+                className="jd-apply-btn"
+                type="button"
+                onClick={() => showActionNotice("Đã nộp đơn ứng tuyển thành công.")}
+              >
                 Ứng tuyển ngay
               </button>
-              <button className="jd-save-btn" type="button">
+              <button
+                className="jd-save-btn"
+                type="button"
+                onClick={() => showActionNotice("Đã lưu công việc thành công.")}
+              >
                 Lưu công việc
               </button>
             </div>
@@ -480,6 +509,21 @@ const JobDetail = () => {
           </aside>
         </div>
       </main>
+      <Snackbar
+        open={actionNotice.open}
+        autoHideDuration={2500}
+        onClose={closeActionNotice}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={closeActionNotice}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {actionNotice.message}
+        </Alert>
+      </Snackbar>
       <Footer />
     </div>
   );

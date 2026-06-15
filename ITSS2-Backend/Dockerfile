@@ -33,4 +33,4 @@ COPY --from=build /app/prisma ./prisma
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node_modules/.bin/prisma db seed && node dist/index.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]

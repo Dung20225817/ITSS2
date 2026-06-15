@@ -86,6 +86,29 @@ jobs:
             -target='aws_lightsail_container_service_deployment_version.backend[0]' \
             -var="image_tag=${{ steps.tag.outputs.IMAGE_TAG }}"
 
+      # ── Seed (only when prisma/seed or data files changed) ──────────────────
+      - name: Check if seed files changed
+        id: seed-check
+        run: |
+          CHANGED=$(git diff HEAD~1 --name-only 2>/dev/null | grep -cE 'ITSS2-Backend/prisma/(seed\.ts|data/|lib/)' || true)
+          echo "changed=$( [ "$CHANGED" -gt 0 ] && echo true || echo false )" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js for seed
+        if: steps.seed-check.outputs.changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run database seed
+        if: steps.seed-check.outputs.changed == 'true'
+        working-directory: ITSS2-Backend
+        run: |
+          DB_URL=$(cd ../ITSS2-Infra/lightsail && terraform output -raw database_url)
+          echo "::add-mask::${DB_URL}"
+          npm ci --prefer-offline
+          npx prisma generate
+          DATABASE_URL="${DB_URL}" npx prisma db seed
+
       # ── Smoke test ───────────────────────────────────────────────────────────
       - name: Smoke test
         run: |

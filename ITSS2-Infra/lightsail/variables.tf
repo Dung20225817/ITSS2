@@ -43,7 +43,7 @@ variable "db_database" {
 variable "db_username" {
   description = "PostgreSQL master username."
   type        = string
-  default     = "itss2_admin"
+  default     = "itss2admin"
 }
 
 variable "container_port" {

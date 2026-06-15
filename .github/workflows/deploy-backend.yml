@@ -73,11 +73,17 @@ jobs:
           TF_VAR_jwt_refresh_secret: ${{ secrets.JWT_REFRESH_SECRET }}
           TF_VAR_cookie_secure: "true"
           TF_VAR_cors_origins: "https://itss2-frontend.vercel.app,http://localhost:5173"
+          TF_VAR_db_username: "itss2admin"
         run: |
-          # Remove tainted deployment resource so apply always creates fresh
-          terraform state rm 'aws_lightsail_container_service_deployment_version.backend[0]' || true
+          # Drop previous deployment from state so Terraform always creates a fresh one.
+          # Ignore exit code 1 — resource may not be in state on first run.
+          terraform state rm 'aws_lightsail_container_service_deployment_version.backend[0]' 2>/dev/null || true
+          # Target only the deployment resource to avoid refreshing OIDC/ECR/DB
+          # resources that the CI role has no read permission for.
           terraform apply \
             -auto-approve \
+            -refresh=false \
+            -target='aws_lightsail_container_service_deployment_version.backend[0]' \
             -var="image_tag=${{ steps.tag.outputs.IMAGE_TAG }}"
 
       # ── Smoke test ───────────────────────────────────────────────────────────

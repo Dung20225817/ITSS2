@@ -57,6 +57,11 @@ resource "aws_lightsail_database" "postgres" {
   publicly_accessible      = true
   skip_final_snapshot      = true
   tags                     = local.tags
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [master_username, master_password]
+  }
 }
 
 resource "aws_lightsail_container_service" "backend" {

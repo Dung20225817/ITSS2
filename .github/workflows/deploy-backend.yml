@@ -90,8 +90,12 @@ jobs:
       - name: Check if seed files changed
         id: seed-check
         run: |
-          CHANGED=$(git diff HEAD~1 --name-only 2>/dev/null | grep -cE 'ITSS2-Backend/prisma/(seed\.ts|data/|lib/)' || true)
-          echo "changed=$( [ "$CHANGED" -gt 0 ] && echo true || echo false )" >> $GITHUB_OUTPUT
+          # Compare full range of commits in this push, not just HEAD~1
+          PREV="${{ github.event.before }}"
+          [ "$PREV" = "0000000000000000000000000000000000000000" ] && PREV="HEAD~1"
+          CHANGED=$(git diff "${PREV}" HEAD --name-only 2>/dev/null \
+            | grep -cE 'ITSS2-Backend/prisma/(seed\.ts|data/|lib/)' || echo 0)
+          echo "changed=$([ "${CHANGED}" -gt 0 ] && echo true || echo false)" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js for seed
         if: steps.seed-check.outputs.changed == 'true'

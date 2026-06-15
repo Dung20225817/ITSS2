@@ -1,3 +1,4 @@
+// seed-version: 2
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import * as fs from "fs";

@@ -16,6 +16,7 @@ export interface RawJob {
   requirements?: string | null;
   benefits?: string | null;
   work_hours?: string | null;
+  location?: string | null;
   application_instruction?: string | null;
   job_source_platform?: string | null;
   acquired_at?: string | null;
@@ -38,14 +39,14 @@ export interface ScheduleSlot {
 // ─── Schedule pool (deterministic rotation used when work_hours is absent) ────
 
 export const SCHEDULE_POOL: ScheduleSlot[][] = [
-  [{ day: "Thu 2", period: "sang" }, { day: "Thu 4", period: "chieu" }],
-  [{ day: "Thu 3", period: "chieu" }, { day: "Thu 5", period: "toi" }],
-  [{ day: "Thu 6", period: "sang" }, { day: "Thu 7", period: "chieu" }],
-  [{ day: "Thu 2", period: "toi" }, { day: "Thu 5", period: "sang" }],
-  [{ day: "Thu 3", period: "sang" }, { day: "Thu 6", period: "toi" }],
-  [{ day: "Thu 4", period: "sang" }, { day: "Thu 7", period: "toi" }],
-  [{ day: "Thu 2", period: "chieu" }, { day: "Thu 4", period: "toi" }],
-  [{ day: "Thu 3", period: "toi" }, { day: "Thu 5", period: "chieu" }],
+  [{ day: "Thứ 2", period: "sáng" }, { day: "Thứ 4", period: "chiều" }],
+  [{ day: "Thứ 3", period: "chiều" }, { day: "Thứ 5", period: "tối" }],
+  [{ day: "Thứ 6", period: "sáng" }, { day: "Thứ 7", period: "chiều" }],
+  [{ day: "Thứ 2", period: "tối" }, { day: "Thứ 5", period: "sáng" }],
+  [{ day: "Thứ 3", period: "sáng" }, { day: "Thứ 6", period: "tối" }],
+  [{ day: "Thứ 4", period: "sáng" }, { day: "Thứ 7", period: "tối" }],
+  [{ day: "Thứ 2", period: "chiều" }, { day: "Thứ 4", period: "tối" }],
+  [{ day: "Thứ 3", period: "tối" }, { day: "Thứ 5", period: "chiều" }],
 ];
 
 // ─── Normalizers ──────────────────────────────────────────────────────────────
@@ -62,22 +63,22 @@ export function deriveCategory(skills: string[] | null, title: string): string {
   if (/marketing|seo|content|social media|digital|brand|campaign|ads|google ads|facebook ads/.test(text))
     return "Marketing";
   if (/design|ui|ux|figma|photoshop|illustrator|graphic|visual/.test(text))
-    return "Thiet ke";
+    return "Thiết kế";
   if (/sale|kinh doanh|business development|crm|account manager/.test(text))
     return "Kinh doanh";
   if (/hr|human resource|nhan su|recruitment|talent|c&b|payroll/.test(text))
-    return "Nhan su";
+    return "Nhân sự";
   if (/teacher|tutor|giao vien|lecture|education|english|ielts|toeic/.test(text))
-    return "Giao duc";
+    return "Giáo dục";
   if (/finance|ke toan|accountant|audit|tax|investment|banking/.test(text))
-    return "Tai chinh";
+    return "Tài chính";
   if (/operation|logistics|supply chain|van hanh|warehouse|procurement/.test(text))
-    return "Van hanh";
+    return "Vận hành";
   if (/customer service|cham soc|support|helpdesk|call center/.test(text))
-    return "Cham soc khach hang";
+    return "Chăm sóc khách hàng";
   if (/f&b|food|barista|waiter|cashier|bep|nha hang|coffee/.test(text))
     return "F&B";
-  return "Khac";
+  return "Khác";
 }
 
 /**
@@ -109,15 +110,15 @@ export function normalizeExperience(
   level: string | null | undefined,
   years: string | null | undefined
 ): string | null {
-  if (years) return `${years} nam kinh nghiem`;
+  if (years) return `${years} năm kinh nghiệm`;
   if (!level) return null;
   const map: Record<string, string> = {
-    Intern: "Khong yeu cau kinh nghiem",
-    Fresher: "Khong yeu cau kinh nghiem",
-    Junior: "Duoi 1 nam kinh nghiem",
-    "Mid-Level": "1-3 nam kinh nghiem",
-    Senior: "Tren 3 nam kinh nghiem",
-    Lead: "Tren 5 nam kinh nghiem",
+    Intern: "Không yêu cầu kinh nghiệm",
+    Fresher: "Không yêu cầu kinh nghiệm",
+    Junior: "Dưới 1 năm kinh nghiệm",
+    "Mid-Level": "1-3 năm kinh nghiệm",
+    Senior: "Trên 3 năm kinh nghiệm",
+    Lead: "Trên 5 năm kinh nghiệm",
   };
   return map[level] ?? level;
 }
@@ -152,17 +153,17 @@ export function synthesizeSalary(
       Senior: [12_000_000, 20_000_000],
       default: [5_000_000, 9_000_000],
     },
-    "Thiet ke": {
+    "Thiết kế": {
       Intern: [3_500_000, 5_000_000],
       Fresher: [5_000_000, 8_000_000],
       Senior: [10_000_000, 20_000_000],
       default: [5_000_000, 10_000_000],
     },
-    "Giao duc": { default: [3_000_000, 6_000_000] },
+    "Giáo dục": { default: [3_000_000, 6_000_000] },
     "F&B": { default: [3_000_000, 5_000_000] },
-    "Van hanh": { default: [4_000_000, 8_000_000] },
-    "Cham soc khach hang": { default: [4_000_000, 7_000_000] },
-    "Tai chinh": {
+    "Vận hành": { default: [4_000_000, 8_000_000] },
+    "Chăm sóc khách hàng": { default: [4_000_000, 7_000_000] },
+    "Tài chính": {
       Intern: [4_000_000, 6_000_000],
       Senior: [15_000_000, 25_000_000],
       default: [7_000_000, 12_000_000],
@@ -190,13 +191,13 @@ export function parseWorkHours(
   if (!raw) return null;
 
   const dayMap: Record<string, string> = {
-    "thu 2": "Thu 2", "thu hai": "Thu 2",
-    "thu 3": "Thu 3", "thu ba": "Thu 3",
-    "thu 4": "Thu 4", "thu tu": "Thu 4",
-    "thu 5": "Thu 5", "thu nam": "Thu 5",
-    "thu 6": "Thu 6", "thu sau": "Thu 6",
-    "thu 7": "Thu 7", "thu bay": "Thu 7",
-    "chu nhat": "CN", "cn": "CN",
+    "thu 2": "Thứ 2", "thu hai": "Thứ 2",
+    "thu 3": "Thứ 3", "thu ba": "Thứ 3",
+    "thu 4": "Thứ 4", "thu tu": "Thứ 4",
+    "thu 5": "Thứ 5", "thu nam": "Thứ 5",
+    "thu 6": "Thứ 6", "thu sau": "Thứ 6",
+    "thu 7": "Thứ 7", "thu bay": "Thứ 7",
+    "chu nhat": "Chủ nhật", "cn": "Chủ nhật",
   };
 
   const lower = raw
@@ -210,11 +211,11 @@ export function parseWorkHours(
   const timeStr = timeMatch ? `${timeMatch[1]}-${timeMatch[2]}` : undefined;
 
   const toPeriod = (time?: string): string => {
-    if (!time) return "sang";
+    if (!time) return "sáng";
     const h = parseInt(time.split(":")[0], 10);
-    if (h < 12) return "sang";
-    if (h < 18) return "chieu";
-    return "toi";
+    if (h < 12) return "sáng";
+    if (h < 18) return "chiều";
+    return "tối";
   };
 
   const slots: ScheduleSlot[] = [];
@@ -227,7 +228,7 @@ export function parseWorkHours(
     const endKey = rangeMatch[2].replace(/\s+/g, " ").trim();
     const startDay = dayMap[startKey];
     const endDay = dayMap[endKey];
-    const allDays = ["Thu 2", "Thu 3", "Thu 4", "Thu 5", "Thu 6", "Thu 7", "CN"];
+    const allDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
     const si = allDays.indexOf(startDay);
     const ei = allDays.indexOf(endDay);
     if (si !== -1 && ei !== -1 && si <= ei) {
@@ -246,6 +247,28 @@ export function parseWorkHours(
   }
 
   return slots.length > 0 ? slots : null;
+}
+
+/**
+ * Extract a clean address string from a raw TopCV location field.
+ * Input example: "- Hà Nội: 38 Phan Đình Phùng, Phường Ba Đình (quận Ba Đình cũ) - Hà Nội: ..."
+ * Output: "38 Phan Đình Phùng, Phường Ba Đình, Hà Nội"
+ */
+export function parseLocation(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  // Split on " - CityName:" pattern to get the first entry
+  const entries = raw.trim().split(/\s*-\s*(?=[^\s-])/);
+  const first = entries.find((e) => e.includes(":")) || entries[0];
+  if (!first) return null;
+  const colonIdx = first.indexOf(":");
+  if (colonIdx === -1) return first.trim();
+  const city = first.substring(0, colonIdx).trim();
+  const address = first
+    .substring(colonIdx + 1)
+    .replace(/\([^)]*\)/g, "")
+    .trim()
+    .replace(/,\s*$/, "");
+  return address ? `${address}, ${city}` : city;
 }
 
 /**

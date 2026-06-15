@@ -81,7 +81,7 @@ const Auth = ({ initialMode = "login" }) => {
       <Container maxWidth="lg" className="auth-shell">
         <Box className="auth-brand">
           <Link to="/" className="auth-logo">
-            ITSS2 Jobs
+            Lumina AI
           </Link>
           <Typography variant="h3" className="auth-heading">
             Kết nối sinh viên với công việc phù hợp

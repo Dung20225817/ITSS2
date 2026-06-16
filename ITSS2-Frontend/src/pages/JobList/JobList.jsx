@@ -12,6 +12,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { TextField, Select, MenuItem, FormControl, Button } from "@mui/material";
 import apiClient from "../../api/client";
+import { CITY_OPTIONS, toCityOptions } from "../../constants/cities";
 
 const JobList = () => {
   useEffect(() => {
@@ -63,7 +64,7 @@ const JobList = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
   // Danh sách địa điểm cho dropdown
-  const [addressOptions, setAddressOptions] = useState([]);
+  const [addressOptions, setAddressOptions] = useState(CITY_OPTIONS);
   
   // Fetch danh sách địa điểm từ API
   useEffect(() => {
@@ -71,10 +72,11 @@ const JobList = () => {
       try {
         const response = await apiClient.get("/api/v1/address");
         if (response.data && response.data.address) {
-          setAddressOptions(response.data.address);
+          setAddressOptions(toCityOptions(response.data.address));
         }
       } catch (error) {
         console.error("Lỗi khi lấy danh sách địa điểm:", error);
+        setAddressOptions(CITY_OPTIONS);
       }
     };
     fetchAddresses();
@@ -443,7 +445,7 @@ const JobList = () => {
             <div className="filter-modal-header">
               <div>
                 <h2>Bộ lọc công việc</h2>
-                <p>Tinh chỉnh kết quả theo mức lương, thời gian và vị trí mong muốn</p>
+                <p>Tinh chỉnh kết quả theo mức lương và thời gian làm việc mong muốn</p>
               </div>
               <button
                 className="filter-modal-close"

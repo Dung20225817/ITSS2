@@ -13,15 +13,14 @@ import {
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SearchIcon from "@mui/icons-material/Search";
+import { CITY_OPTIONS, toCityOptions } from "../../constants/cities";
 
 const SearchBar = ({ gray = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [addresses, setAddresses] = useState([]);
+  const [addresses, setAddresses] = useState(CITY_OPTIONS);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-
-  console.log(addresses);
 
   const handleChange = (event) => {
     setAddress(event.target.value);
@@ -43,14 +42,14 @@ const SearchBar = ({ gray = false }) => {
   const fetchAddresses = async () => {
     try {
       const res = await apiClient.get("/api/v1/address");
-      console.log(res);
-      setAddresses(res.data.address);
+      setAddresses(toCityOptions(res.data.address));
     } catch (err) {
       const errorMessage =
         err.response && err.response.data && err.response.data.message
           ? err.response.data.message
           : "Đã có lỗi xảy ra. Vui lòng thử lại";
-      console.log(errorMessage);
+      console.error(errorMessage);
+      setAddresses(CITY_OPTIONS);
     }
   };
 

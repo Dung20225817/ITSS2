@@ -14,7 +14,7 @@ const statusLabel = {
 };
 
 const MATCHES_PER_PAGE = 9;
-const MATCHING_BATCH_SIZE = 10;
+const MATCHING_BATCH_SIZE = 100;
 
 const Matches = () => {
   const { user } = useAuth();
@@ -124,6 +124,10 @@ const Matches = () => {
 
   const handlePageChange = (_event, value) => {
     setCurrentPage(value);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   return (

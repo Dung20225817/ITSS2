@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { calculateMatchScore } from "../helper/matching.helper";
 import { paginationHelper } from "../helper/pagination.helper";
 
 const prisma = new PrismaClient();
-const DEFAULT_MATCHING_BATCH_SIZE = 10;
+const DEFAULT_MATCHING_BATCH_SIZE = 100;
 const MAX_MATCHING_BATCH_SIZE = 100;
 
 const parsePositiveInt = (value: unknown, fallback: number): number => {
@@ -39,6 +39,8 @@ export const runMatching = async (req: Request, res: Response) => {
     });
     const matchedJobIds: string[] = [];
     let processedJobs = 0;
+    let createdMatches = 0;
+    let updatedMatches = 0;
 
     for (let skip = 0; skip < totalJobs; skip += batchSize) {
       const jobs = await prisma.job.findMany({
@@ -48,6 +50,22 @@ export const runMatching = async (req: Request, res: Response) => {
         skip,
         include: { schedules: true }
       });
+      const batchJobIds = jobs.map((job) => job.id);
+      const existingMatches = await prisma.matchResult.findMany({
+        where: {
+          userId,
+          jobId: { in: batchJobIds },
+        },
+        select: {
+          id: true,
+          jobId: true,
+        },
+      });
+      const existingMatchByJobId = new Map(
+        existingMatches.map((match) => [match.jobId, match])
+      );
+      const matchesToCreate: Prisma.MatchResultCreateManyInput[] = [];
+      const matchUpdates: Prisma.PrismaPromise<unknown>[] = [];
 
       for (const job of jobs) {
         processedJobs += 1;
@@ -55,29 +73,35 @@ export const runMatching = async (req: Request, res: Response) => {
 
         if (score >= 60) {
           matchedJobIds.push(job.id);
-
-          // Find existing match
-          const existingMatch = await prisma.matchResult.findFirst({
-            where: { userId, jobId: job.id }
-          });
+          const existingMatch = existingMatchByJobId.get(job.id);
 
           if (existingMatch) {
-            await prisma.matchResult.update({
+            matchUpdates.push(prisma.matchResult.update({
               where: { id: existingMatch.id },
               data: { score, reasons }
-            });
+            }));
           } else {
-            await prisma.matchResult.create({
-              data: {
-                userId,
-                jobId: job.id,
-                score,
-                reasons,
-                status: "pending"
-              }
+            matchesToCreate.push({
+              userId,
+              jobId: job.id,
+              score,
+              reasons,
+              status: "pending"
             });
           }
         }
+      }
+
+      if (matchesToCreate.length > 0) {
+        const createResult = await prisma.matchResult.createMany({
+          data: matchesToCreate,
+        });
+        createdMatches += createResult.count;
+      }
+
+      if (matchUpdates.length > 0) {
+        await prisma.$transaction(matchUpdates);
+        updatedMatches += matchUpdates.length;
       }
     }
 
@@ -96,6 +120,8 @@ export const runMatching = async (req: Request, res: Response) => {
       processedJobs,
       totalJobs,
       batchSize,
+      createdMatches,
+      updatedMatches,
     });
   } catch (error) {
     console.error("Run Matching Error:", error);

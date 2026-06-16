@@ -4,6 +4,8 @@ const router:Router = Router();
 
 //[GET]/api/v1/jobs
 router.get("/", controller.index);
+//[GET]/api/v1/jobs/salary-range
+router.get("/salary-range", controller.salaryRange);
 //[GET]/api/v1/jobs/detail/:id
 router.get("/detail/:id",controller.detail);
 

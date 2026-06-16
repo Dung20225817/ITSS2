@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { paginationHelper } from "../helper/pagination.helper";
 import { mapJobToResponse } from "../helper/response.mapper";
+import { buildCityWhere } from "../helper/city.helper";
 
 const prisma = new PrismaClient();
 
@@ -24,7 +25,7 @@ export const index = async (req: Request, res: Response) => {
     // Tìm theo địa chỉ
     const address = req.query.address?.toString().trim();
     if (address) {
-      where.address = { contains: address, mode: "insensitive" };
+      andConditions.push(buildCityWhere(address));
     }
 
     // Lọc theo category

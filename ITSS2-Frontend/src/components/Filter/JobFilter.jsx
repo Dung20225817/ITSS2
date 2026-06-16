@@ -1,22 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./JobFilter.css";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import apiClient from "../../api/client";
-import { DEFAULT_USER_ID } from "../../config/env";
+import Slider from "@mui/material/Slider";
+
+const SALARY_MIN = 0;
+const SALARY_MAX = 30000000;
+const SALARY_STEP = 500000;
+const JOB_TYPES = [
+  { name: "Full-time" },
+  { name: "Part-time" }
+];
+
+const formatSalary = (value) => `${Number(value).toLocaleString("vi-VN")}đ`;
+const normalizeJobTypes = (jobTypes = []) => {
+  return jobTypes
+    .map((jobType) => JOB_TYPES.find((type) => type.name.toLowerCase() === jobType.toLowerCase())?.name)
+    .filter(Boolean);
+};
 
 const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
   // State cho sections mở rộng
   const [expanded, setExpanded] = useState({
-    jobType: true,
-    workTime: true,
-    jobPosition: true
+    workTime: true
   });
   
   // State cho bộ lọc
   const [filters, setFilters] = useState({
-    jobType: initialFilters.jobType || [],
-    category: initialFilters.category || [],
-    jobForm: initialFilters.jobForm || [],
+    jobType: normalizeJobTypes(initialFilters.jobType || []),
+    category: ["Tất cả"],
+    jobForm: ["Tất cả"],
     days: initialFilters.days || [],
     minSalary: initialFilters.minSalary || "",
     maxSalary: initialFilters.maxSalary || "",
@@ -25,52 +37,11 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
 
   // State cho theo dõi trạng thái thu gọn/mở rộng
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
-  // State cho dữ liệu từ API
-  const [categories, setCategories] = useState([]);
-  const [jobTypes, setJobTypes] = useState([]);
-  const [jobForms, setJobForms] = useState([]);
-  
-  // Fetch dữ liệu phân loại từ API
-  useEffect(() => {
-    const fetchFilterData = async () => {
-      try {
-        // Tạm thời sử dụng mẫu cho job types và job forms
-        setJobTypes([
-          { name: "Freelancer" },
-          { name: "Full-time" },
-          { name: "Part-time" }
-        ]);
-        
-        setJobForms([
-          { name: "Tất cả" },
-          { name: "Remote" },
-          { name: "Hybrid" },
-          { name: "On-site" }
-        ]);
-        
-        // Sử dụng API mới để lấy danh sách category
-        const response = await apiClient.get(`/api/v1/users/${DEFAULT_USER_ID}/get-category-list`);
-        if (response.data) {
-          // Thêm "Tất cả" vào danh sách category
-          const categoriesWithAll = [{ name: "Tất cả" }, ...response.data.map(cat => ({ name: cat }))];
-          setCategories(categoriesWithAll);
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu bộ lọc:", error);
-        // Fallback nếu API bị lỗi
-        setCategories([
-          { name: "Tất cả" },
-          { name: "Nhân viên bán hàng" },
-          { name: "Gia sư" },
-          { name: "Design" },
-          { name: "Sales" }
-        ]);
-      }
-    };
-    
-    fetchFilterData();
-  }, []);
+
+  const salaryValue = [
+    filters.minSalary ? Number(filters.minSalary) : SALARY_MIN,
+    filters.maxSalary ? Number(filters.maxSalary) : SALARY_MAX
+  ];
   
   // Xử lý khi toggle section
   const toggleSection = (section) => {
@@ -87,9 +58,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
     
     // Đặt tất cả các section thành cùng giá trị (true nếu mở rộng, false nếu thu gọn)
     setExpanded({
-      jobType: !newExpandedState,
-      workTime: !newExpandedState,
-      jobPosition: !newExpandedState
+      workTime: !newExpandedState
     });
   };
   
@@ -117,62 +86,6 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
     }
     
     setFilters({ ...filters, jobType: newJobTypes });
-  };
-  
-  // Xử lý khi thay đổi vị trí công việc (category)
-  const handleCategoryChange = (category) => {
-    let newCategories = [...(filters.category || [])];
-    
-    if (category === "Tất cả") {
-      // Nếu chọn "Tất cả", xóa hết các lựa chọn khác
-      newCategories = ["Tất cả"];
-    } else {
-      // Nếu đã có "Tất cả", xóa nó đi
-      if (newCategories.includes("Tất cả")) {
-        newCategories = newCategories.filter(item => item !== "Tất cả");
-      }
-      
-      if (newCategories.includes(category)) {
-        newCategories = newCategories.filter(item => item !== category);
-      } else {
-        newCategories.push(category);
-      }
-      
-      // Nếu không còn lựa chọn nào, thêm lại "Tất cả"
-      if (newCategories.length === 0) {
-        newCategories = ["Tất cả"];
-      }
-    }
-    
-    setFilters({ ...filters, category: newCategories });
-  };
-  
-  // Xử lý khi thay đổi hình thức công việc (jobForm)
-  const handleJobFormChange = (form) => {
-    let newJobForms = [...(filters.jobForm || [])];
-    
-    if (form === "Tất cả") {
-      // Nếu chọn "Tất cả", xóa hết các lựa chọn khác
-      newJobForms = ["Tất cả"];
-    } else {
-      // Nếu đã có "Tất cả", xóa nó đi
-      if (newJobForms.includes("Tất cả")) {
-        newJobForms = newJobForms.filter(item => item !== "Tất cả");
-      }
-      
-      if (newJobForms.includes(form)) {
-        newJobForms = newJobForms.filter(item => item !== form);
-      } else {
-        newJobForms.push(form);
-      }
-      
-      // Nếu không còn lựa chọn nào, thêm lại "Tất cả"
-      if (newJobForms.length === 0) {
-        newJobForms = ["Tất cả"];
-      }
-    }
-    
-    setFilters({ ...filters, jobForm: newJobForms });
   };
   
   // Xử lý khi thay đổi ngày làm việc
@@ -214,10 +127,12 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
   };
   
   // Xử lý khi thay đổi mức lương
-  const handleSalaryChange = (type, value) => {
+  const handleSalaryChange = (_, value) => {
+    const [minSalary, maxSalary] = value;
     setFilters({ 
       ...filters, 
-      [type]: value 
+      minSalary: minSalary === SALARY_MIN ? "" : String(minSalary),
+      maxSalary: maxSalary === SALARY_MAX ? "" : String(maxSalary)
     });
   };
   
@@ -267,52 +182,27 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
         {/* Salary Range */}
         <div className="filter-section">
           <h4 className="section-title">Mức Lương</h4>
-          <div className="salary-range">
-            <input 
-              type="text" 
-              placeholder="Từ" 
-              className="salary-input" 
-              value={filters.minSalary}
-              onChange={(e) => handleSalaryChange("minSalary", e.target.value)}
+          <div className="salary-slider">
+            <Slider
+              value={salaryValue}
+              min={SALARY_MIN}
+              max={SALARY_MAX}
+              step={SALARY_STEP}
+              onChange={handleSalaryChange}
+              valueLabelDisplay="auto"
+              valueLabelFormat={formatSalary}
+              disableSwap
+              aria-label="Khoảng lương"
             />
-            <input 
-              type="text" 
-              placeholder="Đến" 
-              className="salary-input" 
-              value={filters.maxSalary}
-              onChange={(e) => handleSalaryChange("maxSalary", e.target.value)}
-            />
-          </div>
-        </div>
-        
-        <div className="section-divider"></div>
-        
-        {/* Job Form */}
-        <div className="filter-section">
-          <div className="section-header" onClick={() => toggleSection("jobType")}>
-            <h4 className="section-title">Hình thức công việc</h4>
-            <ExpandMoreIcon className={`expand-icon ${expanded.jobType ? "" : "rotated"}`} />
-          </div>
-          
-          {expanded.jobType && (
-            <div className="section-content">
-              {jobForms.map((form, index) => (
-                <div className="checkbox-item" key={index}>
-                  <input 
-                    type="checkbox" 
-                    id={`form-${index}`} 
-                    checked={Array.isArray(filters.jobForm) && filters.jobForm.includes(form.name)}
-                    onChange={() => handleJobFormChange(form.name)}
-                  />
-                  <label htmlFor={`form-${index}`}>{form.name}</label>
-                </div>
-              ))}
+            <div className="salary-slider-labels">
+              <span>{filters.minSalary ? formatSalary(filters.minSalary) : "Từ 0đ"}</span>
+              <span>{filters.maxSalary ? formatSalary(filters.maxSalary) : "Không giới hạn"}</span>
             </div>
-          )}
+          </div>
         </div>
         
         <div className="section-divider"></div>
-        
+
         {/* Work Time */}
         <div className="filter-section">
           <div className="section-header" onClick={() => toggleSection("workTime")}>
@@ -322,7 +212,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
           
           {expanded.workTime && (
             <div className="section-content">
-              {jobTypes.map((type, index) => (
+              {JOB_TYPES.map((type, index) => (
                 <div className="checkbox-item" key={index}>
                   <input 
                     type="checkbox" 
@@ -373,35 +263,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
             </div>
           )}
         </div>
-        
-        <div className="section-divider"></div>
-        
-        {/* Job Position */}
-        <div className="filter-section">
-          <div className="section-header" onClick={() => toggleSection("jobPosition")}>
-            <h4 className="section-title">Vị trí công việc</h4>
-            <ExpandMoreIcon className={`expand-icon ${expanded.jobPosition ? "" : "rotated"}`} />
-          </div>
-          
-          {expanded.jobPosition && (
-            <div className="section-content">
-              {categories.map((category, index) => (
-                <div className="checkbox-item" key={index}>
-                  <input 
-                    type="checkbox" 
-                    id={`category-${index}`} 
-                    checked={Array.isArray(filters.category) && filters.category.includes(category.name)}
-                    onChange={() => handleCategoryChange(category.name)}
-                  />
-                  <label htmlFor={`category-${index}`}>{category.name}</label>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        <div className="section-divider"></div>
-        
+
         <button className="collapse-button" onClick={toggleAllSections}>
           {isCollapsed ? "Mở rộng" : "Thu hẹp"}
         </button>

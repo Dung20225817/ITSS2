@@ -443,7 +443,7 @@ const JobList = () => {
             <div className="filter-modal-header">
               <div>
                 <h2>Bộ lọc công việc</h2>
-                <p>Tinh chỉnh kết quả theo mức lương, thời gian và vị trí mong muốn</p>
+                <p>Tinh chỉnh kết quả theo mức lương và thời gian làm việc mong muốn</p>
               </div>
               <button
                 className="filter-modal-close"

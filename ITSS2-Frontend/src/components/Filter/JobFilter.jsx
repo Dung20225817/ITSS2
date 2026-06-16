@@ -4,7 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Slider from "@mui/material/Slider";
 
 const SALARY_MIN = 0;
-const SALARY_MAX = 30000000;
+const SALARY_MAX = 5000000;
 const SALARY_STEP = 500000;
 const JOB_TYPES = [
   { name: "Full-time" },

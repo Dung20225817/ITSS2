@@ -34,7 +34,7 @@ Hệ thống cần biết đường dẫn tới Database và các thiết lập 
 2. Tạo một file tên là `.env` (bạn có thể copy từ `.env.example` nếu có).
 3. Điền nội dung sau vào file `ITSS2-Backend/.env`:
    ```env
-   PORT=8080
+   PORT=8081
    DATABASE_URL="postgresql://itss2_user:itss2_password@localhost:5432/itss2_mvp?schema=public"
    CORS_ORIGINS=http://localhost:5173
    ```
@@ -44,7 +44,7 @@ Hệ thống cần biết đường dẫn tới Database và các thiết lập 
 2. Tạo một file tên là `.env.local` (bạn có thể copy từ `.env.local.example` nếu có).
 3. Điền nội dung sau vào file `ITSS2-Frontend/.env.local`:
    ```env
-   VITE_API_BASE_URL=http://localhost:8080
+   VITE_API_BASE_URL=http://localhost:8081
    VITE_DEFAULT_USER_ID=demo-student-1
    ```
 
@@ -73,7 +73,7 @@ Mở một Terminal (Terminal 1) và thực hiện các lệnh sau:
    ```powershell
    npm run dev
    ```
-   *(Server Backend sẽ báo chạy thành công tại `http://localhost:8080`)*
+   *(Server Backend sẽ báo chạy thành công tại `http://localhost:8081`)*
 
 ---
 

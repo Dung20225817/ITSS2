@@ -40,7 +40,7 @@ npm install
 
 # Tạo file .env từ template (nhớ kiểm tra DATABASE_URL)
 # DATABASE_URL="postgresql://itss2_user:itss2_password@localhost:5432/itss2_mvp?schema=public"
-# PORT=8080
+# PORT=8081
 # CORS_ORIGINS=http://localhost:5173
 
 # Khởi tạo Prisma & Seed dữ liệu mẫu (User demo-student-1, Jobs, Company)
@@ -48,7 +48,7 @@ npm run db:generate
 npm run db:migrate
 npm run db:seed
 
-# Khởi chạy server Backend (Mặc định ở http://localhost:8080)
+# Khởi chạy server Backend (Mặc định ở http://localhost:8081)
 npm run dev
 ```
 
@@ -61,7 +61,7 @@ cd ITSS2-Frontend
 npm install
 
 # Tạo file .env.local
-# VITE_API_BASE_URL=http://localhost:8080
+# VITE_API_BASE_URL=http://localhost:8081
 # VITE_DEFAULT_USER_ID=demo-student-1
 
 # Khởi chạy Frontend (Mặc định ở http://localhost:5173)

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Pagination from "@mui/material/Pagination";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import apiClient from "../../api/client";
@@ -12,9 +13,15 @@ const statusLabel = {
   rejected: "Đã từ chối",
 };
 
+const MATCHES_PER_PAGE = 9;
+const MATCHING_BATCH_SIZE = 10;
+
 const Matches = () => {
   const { user } = useAuth();
   const [matches, setMatches] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalMatches, setTotalMatches] = useState(0);
   const [loading, setLoading] = useState(false);
   const [runMessage, setRunMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -27,15 +34,28 @@ const Matches = () => {
     try {
       setLoading(true);
       setErrorMessage("");
-      const res = await apiClient.get(`/api/v1/matching/results/${userId}`);
-      setMatches(res.data);
+      const res = await apiClient.get(`/api/v1/matching/results/${userId}`, {
+        params: {
+          page: currentPage,
+          limit: MATCHES_PER_PAGE,
+        },
+      });
+      const nextMatches = res.data?.data || [];
+      const nextTotalMatches = res.data?.countMatches || 0;
+      const nextTotalPages =
+        res.data?.pagination?.totalPage ||
+        Math.max(1, Math.ceil(nextTotalMatches / MATCHES_PER_PAGE));
+
+      setMatches(nextMatches);
+      setTotalMatches(nextTotalMatches);
+      setTotalPages(nextTotalPages);
     } catch (error) {
       console.error("Error fetching matches", error);
       setErrorMessage("Không thể tải danh sách công việc phù hợp.");
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [currentPage, userId]);
 
   const runMatching = async () => {
     if (!userId) return;
@@ -45,12 +65,35 @@ const Matches = () => {
       setRunMessage("");
       setErrorMessage("");
 
-      const response = await apiClient.post(`/api/v1/matching/run/${userId}`);
+      const response = await apiClient.post(
+        `/api/v1/matching/run/${userId}`,
+        null,
+        {
+          params: {
+            limit: MATCHING_BATCH_SIZE,
+          },
+        }
+      );
       const matchCount = response.data?.matchCount ?? 0;
       setRunMessage(`Đã tìm thấy ${matchCount} công việc phù hợp.`);
 
-      const res = await apiClient.get(`/api/v1/matching/results/${userId}`);
-      setMatches(res.data);
+      setCurrentPage(1);
+
+      const res = await apiClient.get(`/api/v1/matching/results/${userId}`, {
+        params: {
+          page: 1,
+          limit: MATCHES_PER_PAGE,
+        },
+      });
+      const nextMatches = res.data?.data || [];
+      const nextTotalMatches = res.data?.countMatches || 0;
+      const nextTotalPages =
+        res.data?.pagination?.totalPage ||
+        Math.max(1, Math.ceil(nextTotalMatches / MATCHES_PER_PAGE));
+
+      setMatches(nextMatches);
+      setTotalMatches(nextTotalMatches);
+      setTotalPages(nextTotalPages);
     } catch (error) {
       console.error("Error running matching", error);
       setErrorMessage("Không thể chạy matching. Vui lòng thử lại.");
@@ -79,6 +122,10 @@ const Matches = () => {
     fetchMatches();
   }, [fetchMatches]);
 
+  const handlePageChange = (_event, value) => {
+    setCurrentPage(value);
+  };
+
   return (
     <>
       <Header />
@@ -96,6 +143,9 @@ const Matches = () => {
 
         {runMessage && <p className="match-run-message">{runMessage}</p>}
         {errorMessage && <p className="match-error-message">{errorMessage}</p>}
+        {!loading && totalMatches > 0 && (
+          <p className="match-total">Tìm thấy {totalMatches} công việc phù hợp.</p>
+        )}
 
         {matches.length === 0 && !loading && (
           <p className="no-matches">
@@ -151,6 +201,20 @@ const Matches = () => {
             </div>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="matches-pagination">
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              siblingCount={1}
+            />
+          </div>
+        )}
       </main>
       <Footer />
     </>

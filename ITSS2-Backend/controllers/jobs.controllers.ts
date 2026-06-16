@@ -6,6 +6,20 @@ import { buildCityWhere } from "../helper/city.helper";
 
 const prisma = new PrismaClient();
 
+const SALARY_STEP = 500000;
+
+const parseSalaryQuery = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === "") return undefined;
+
+  const salary = Number(value);
+  return Number.isFinite(salary) && salary >= 0 ? salary : undefined;
+};
+
+const roundSalaryLimit = (value: number) => {
+  if (value <= 0) return 0;
+  return Math.ceil(value / SALARY_STEP) * SALARY_STEP;
+};
+
 //[GET]/api/v1/jobs
 export const index = async (req: Request, res: Response) => {
   try {
@@ -51,10 +65,17 @@ export const index = async (req: Request, res: Response) => {
     }
 
     // Lọc theo mức lương
-    if (req.query.minSalary || req.query.maxSalary) {
-      where.salary = {};
-      if (req.query.minSalary) where.salary.gte = Number(req.query.minSalary);
-      if (req.query.maxSalary) where.salary.lte = Number(req.query.maxSalary);
+    const minSalary = parseSalaryQuery(req.query.minSalary);
+    const maxSalary = parseSalaryQuery(req.query.maxSalary);
+    if (minSalary !== undefined || maxSalary !== undefined) {
+      const salaryFilter: Prisma.IntNullableFilter = {};
+      const salaryLowerBound = Math.min(minSalary ?? 0, maxSalary ?? Number.POSITIVE_INFINITY);
+      const salaryUpperBound = Math.max(minSalary ?? 0, maxSalary ?? Number.NEGATIVE_INFINITY);
+
+      if (minSalary !== undefined) salaryFilter.gte = salaryLowerBound;
+      if (maxSalary !== undefined) salaryFilter.lte = salaryUpperBound;
+
+      where.salary = salaryFilter;
     }
 
     // Lọc theo các ngày làm việc (workingTime - string cũ)
@@ -133,6 +154,31 @@ export const index = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Job Index Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+//[GET]/api/v1/jobs/salary-range
+export const salaryRange = async (_req: Request, res: Response) => {
+  try {
+    const range = await prisma.job.aggregate({
+      where: {
+        deleted: false,
+        salary: { not: null }
+      },
+      _min: { salary: true },
+      _max: { salary: true }
+    });
+
+    const minSalary = range._min.salary ?? 0;
+    const maxSalary = roundSalaryLimit(range._max.salary ?? 0);
+
+    res.status(200).json({
+      minSalary,
+      maxSalary
+    });
+  } catch (error) {
+    console.error("Job Salary Range Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 }

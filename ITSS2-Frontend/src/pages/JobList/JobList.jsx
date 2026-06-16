@@ -65,6 +65,10 @@ const JobList = () => {
   
   // Danh sách địa điểm cho dropdown
   const [addressOptions, setAddressOptions] = useState(CITY_OPTIONS);
+  const [salaryBounds, setSalaryBounds] = useState({
+    minSalary: 0,
+    maxSalary: 100000000
+  });
   
   // Fetch danh sách địa điểm từ API
   useEffect(() => {
@@ -80,6 +84,48 @@ const JobList = () => {
       }
     };
     fetchAddresses();
+  }, []);
+
+  useEffect(() => {
+    const fetchSalaryBounds = async () => {
+      try {
+        const response = await apiClient.get("/api/v1/jobs/salary-range");
+        const maxSalary = Number(response.data?.maxSalary);
+
+        if (Number.isFinite(maxSalary) && maxSalary > 0) {
+          setSalaryBounds({
+            minSalary: Number(response.data?.minSalary) || 0,
+            maxSalary
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy khoảng lương:", error);
+      }
+
+      try {
+        const response = await apiClient.get("/api/v1/jobs", {
+          params: {
+            sortKey: "salary",
+            sortValue: "desc",
+            minSalary: 1,
+            limit: 1
+          }
+        });
+        const maxSalary = Number(response.data?.data?.[0]?.salary);
+
+        if (Number.isFinite(maxSalary) && maxSalary > 0) {
+          setSalaryBounds({
+            minSalary: 0,
+            maxSalary: Math.ceil(maxSalary / 500000) * 500000
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy mức lương cao nhất:", error);
+      }
+    };
+
+    fetchSalaryBounds();
   }, []);
   
   // Xử lý bấm bên ngoài dropdown để đóng nó
@@ -460,6 +506,7 @@ const JobList = () => {
             <JobFilter
               onFilterChange={handleFilterChange}
               initialFilters={filters}
+              salaryBounds={salaryBounds}
             />
           </div>
         </div>

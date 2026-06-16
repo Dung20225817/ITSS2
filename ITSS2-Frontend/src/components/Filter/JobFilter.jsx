@@ -4,7 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Slider from "@mui/material/Slider";
 
 const SALARY_MIN = 0;
-const SALARY_MAX = 5000000;
+const DEFAULT_SALARY_MAX = 100000000;
 const SALARY_STEP = 500000;
 const JOB_TYPES = [
   { name: "Full-time" },
@@ -12,13 +12,22 @@ const JOB_TYPES = [
 ];
 
 const formatSalary = (value) => `${Number(value).toLocaleString("vi-VN")}đ`;
+const parseSalaryValue = (value) => {
+  const salary = Number(value);
+  return Number.isFinite(salary) && salary >= 0 ? salary : null;
+};
+const roundSalaryLimit = (value, fallback = DEFAULT_SALARY_MAX) => {
+  const salary = parseSalaryValue(value);
+  if (!salary) return fallback;
+  return Math.ceil(salary / SALARY_STEP) * SALARY_STEP;
+};
 const normalizeJobTypes = (jobTypes = []) => {
   return jobTypes
     .map((jobType) => JOB_TYPES.find((type) => type.name.toLowerCase() === jobType.toLowerCase())?.name)
     .filter(Boolean);
 };
 
-const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
+const JobFilter = ({ onFilterChange, initialFilters = {}, salaryBounds = {} }) => {
   // State cho sections mở rộng
   const [expanded, setExpanded] = useState({
     workTime: true
@@ -38,9 +47,21 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
   // State cho theo dõi trạng thái thu gọn/mở rộng
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const selectedMinSalary = parseSalaryValue(filters.minSalary);
+  const selectedMaxSalary = parseSalaryValue(filters.maxSalary);
+  const salaryMax = Math.max(
+    roundSalaryLimit(salaryBounds.maxSalary),
+    roundSalaryLimit(selectedMinSalary, SALARY_MIN),
+    roundSalaryLimit(selectedMaxSalary, SALARY_MIN),
+    SALARY_STEP
+  );
+  const rawSalaryValue = [
+    selectedMinSalary ?? SALARY_MIN,
+    selectedMaxSalary ?? salaryMax
+  ];
   const salaryValue = [
-    filters.minSalary ? Number(filters.minSalary) : SALARY_MIN,
-    filters.maxSalary ? Number(filters.maxSalary) : SALARY_MAX
+    Math.min(rawSalaryValue[0], rawSalaryValue[1]),
+    Math.max(rawSalaryValue[0], rawSalaryValue[1])
   ];
   
   // Xử lý khi toggle section
@@ -132,7 +153,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
     setFilters({ 
       ...filters, 
       minSalary: minSalary === SALARY_MIN ? "" : String(minSalary),
-      maxSalary: maxSalary === SALARY_MAX ? "" : String(maxSalary)
+      maxSalary: maxSalary === salaryMax ? "" : String(maxSalary)
     });
   };
   
@@ -186,7 +207,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
             <Slider
               value={salaryValue}
               min={SALARY_MIN}
-              max={SALARY_MAX}
+              max={salaryMax}
               step={SALARY_STEP}
               onChange={handleSalaryChange}
               valueLabelDisplay="auto"
@@ -196,7 +217,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
             />
             <div className="salary-slider-labels">
               <span>{filters.minSalary ? formatSalary(filters.minSalary) : "Từ 0đ"}</span>
-              <span>{filters.maxSalary ? formatSalary(filters.maxSalary) : "Không giới hạn"}</span>
+              <span>{filters.maxSalary ? formatSalary(filters.maxSalary) : `Đến ${formatSalary(salaryMax)}`}</span>
             </div>
           </div>
         </div>
